@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="小糍粑 SSS 英语儿歌启蒙工作台，妈妈每天陪孩子听一首、唱一首、轻松打卡。">
+  <title>小糍粑 SSS 儿歌启蒙打卡工作台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260812-1015">
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+    <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5Z"/><path d="M4 6.5v13M8 7h8"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2l-5-4.9 6.9-1Z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#">
+        <span class="brand-mark" aria-label="音乐符号">♫</span>
+        <span><strong>小糍粑启蒙</strong><small>SSS 英语儿歌启蒙</small></span>
+      </a>
+      <nav class="main-nav" aria-label="主导航">
+        <button class="nav-item active" data-view="today"><svg><use href="#i-home"/></svg><span>今日学习</span></button>
+        <button class="nav-item" data-view="library"><svg><use href="#i-library"/></svg><span>启蒙资源库</span></button>
+        <button class="nav-item" data-view="growth"><svg><use href="#i-chart"/></svg><span>宝贝成长</span></button>
+      </nav>
+        <div class="sidebar-card">
+        <div class="rainbow">✦</div>
+        <strong>一起坚持吧！</strong>
+        <p>每天 15 分钟<br>让英语自然发生</p>
+        <div class="mini-progress"><span style="width: 33%"></span></div>
+        <small>本周已完成 <span id="sidebarWeekProgress">0 / 7 天</span></small>
+      </div>
+      <button class="admin-entry" id="adminEntry"><svg><use href="#i-settings"/></svg>内容管理后台</button>
+      <div class="profile-mini"><div class="avatar">糍</div><span><strong>小糍粑妈妈</strong><small id="profileLearningDays">已陪伴 0 天</small></span><button>•••</button></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="打开菜单">☰</button>
+        <div class="date-greeting"><small id="currentDate">7月31日 · 星期五</small><h1>早上好，今天也要开心启蒙呀 <span>☀</span></h1></div>
+        <div class="top-actions"><div class="streak-pill">🔥 已连续打卡 <strong id="streakCount">7</strong> 天</div><button class="round-btn">🔔<i></i></button><div class="avatar large">糍</div></div>
+      </header>
+
+      <section class="view active" id="view-today">
+        <div class="workspace-toolbar">
+          <div class="mode-tabs"><button class="active">🎵 SSS 英语儿歌</button></div>
+          <button class="toolbar-search" id="focusResourceSearch">⌕ <span>搜索</span></button>
+        </div>
+        <section class="theme-journey" aria-label="12周主题路线">
+          <div class="theme-journey-head"><div><span>SSS ENGLISH JOURNEY</span><h3>12周主题启蒙路线</h3></div><p>每天沿着一个主题，听儿歌、读绘本、做一点亲子互动</p></div>
+          <div class="theme-journey-list" id="themeJourney"></div>
+        </section>
+        <div class="plan-progress"><span>🚗</span><div><i id="weekProgressBar"></i></div><strong><b id="weekCompleted">0</b>/90 天</strong></div>
+        <div class="day-strip" id="dayStrip"></div>
+
+        <div class="section-heading"><div><span class="heading-icon coral"><svg><use href="#i-sun"/></svg></span><h3 id="sectionHeadingTitle">今日学习内容</h3><p id="sectionHeadingDescription">先完成核心儿歌，口语和绘本按宝宝兴趣来</p></div><span class="completion"><b id="completedTasks">0</b>/1 核心完成</span></div>
+
+        <div class="lesson-grid">
+          <article class="lesson-card song-card">
+            <div class="lesson-number">01</div>
+            <div class="video-stage" id="videoStage">
+              <video id="lessonVideo" controls preload="metadata" playsinline hidden></video>
+              <div class="video-placeholder" id="videoPlaceholder">
+                <img class="lesson-thumb" id="lessonThumb" alt="当天学习视频封面">
+                <div class="video-sky"><span>☁</span><span>☁</span><div class="video-grass"></div><div class="sheep">☁<b>•ᴥ•</b></div><div class="lamb">☁<b>•ᴥ•</b></div></div>
+                <button class="play-button" id="playDemo"><svg><use href="#i-play"/></svg></button>
+                <span class="netdisk-hint">点击封面打开当天网盘视频</span>
+              </div>
+              <span class="duration">02:18</span>
+            </div>
+            <div class="lesson-body">
+              <div class="lesson-label"><span class="dot coral"></span>儿歌磨耳朵 <em>核心内容</em></div>
+              <h4 id="todaySongTitle">Head Shoulders Knees &amp; Toes</h4>
+              <p id="todaySongDescription">先完整听一遍，再跟着节奏做动作。不要求宝宝开口，开心最重要。</p>
+              <div class="tags"><span># 动物主题</span><span># 节奏律动</span><span># 亲子互动</span></div>
+              <a class="netdisk-link" id="openNetdisk" target="_blank" rel="noopener">打开当天网盘视频 ↗</a>
+              <label class="task-check"><input type="checkbox" data-task="song"><span><svg><use href="#i-check"/></svg></span>儿歌听完啦</label>
+            </div>
+          </article>
+
+          <article class="lesson-card phrase-card">
+            <div class="lesson-number mint-bg">02</div>
+            <div class="lesson-body full">
+              <div class="lesson-label"><span class="dot mint"></span>儿歌里的亲子口语 <em class="mint-tag">可选拓展</em></div>
+              <h4 id="phraseHeading">跟着今天的儿歌说一说</h4>
+              <p id="phraseDescription">不单独上课，跟着儿歌里的词和动作自然说一说就好。</p>
+              <div class="phrase-list" id="phraseList">
+                <button class="phrase-row" data-speak="Look! A little lamb!"><span class="phrase-scene">看到小羊时</span><span><strong>Look! A little lamb!</strong><small>看！一只小羊羔！</small></span><i><svg><use href="#i-volume"/></svg></i></button>
+                <button class="phrase-row" data-speak="It's so soft."><span class="phrase-scene yellow">摸毛绒玩具时</span><span><strong>It's so soft.</strong><small>它好柔软呀。</small></span><i><svg><use href="#i-volume"/></svg></i></button>
+                <button class="phrase-row" data-speak="Follow me!"><span class="phrase-scene blue">邀请宝宝时</span><span><strong>Follow me!</strong><small>跟我来！</small></span><i><svg><use href="#i-volume"/></svg></i></button>
+              </div>
+              <div class="tip"><span>💡</span><p><strong>陪伴小提示</strong>妈妈先自然地说，不翻译、不提问，重复 2-3 次就很棒啦！</p></div>
+            </div>
+          </article>
+
+          <article class="lesson-card book-card">
+            <div class="lesson-number yellow-bg">03</div>
+            <div class="video-stage book-video-stage" id="bookVideoStage" hidden>
+              <video id="bookVideo" controls preload="metadata" playsinline hidden></video>
+            </div>
+            <div class="book-cover" id="bookCover"><img class="lesson-thumb" id="bookThumb" alt="当天绘本视频封面"><div class="book-title"><small>SSS STORY</small><strong id="bookCardTitle">From Head<br>to Toe</strong><span>绘本共读</span></div><div class="giraffe">🦒</div><div class="elephant">🐘</div></div>
+            <div class="lesson-body">
+              <div class="lesson-label"><span class="dot yellow-dot"></span>主题绘本共读 <em class="yellow-tag">部分日期开放</em></div>
+              <h4>今天有绘本就读 4-6 页</h4>
+              <p id="bookCardDescription">不是每天都安排绘本，出现时跟着图片读一会儿，宝宝喜欢哪页就多停一会儿。</p>
+              <a class="netdisk-link" id="openBookNetdisk" target="_blank" rel="noopener">打开当天绘本网盘视频 ↗</a>
+              <button class="outline-btn" id="openBook"><svg><use href="#i-image"/></svg>打开绘本图片 <svg><use href="#i-arrow"/></svg></button>
+            </div>
+          </article>
+
+        </div>
+
+        <section class="checkin-card" id="checkinSection">
+          <div class="checkin-copy"><span class="heading-icon peach"><svg><use href="#i-heart"/></svg></span><div><h3>记录今天的小小成长</h3><p>完成后会同步到“宝贝成长”，成长统计会自动更新</p></div></div>
+          <div class="checkin-form">
+            <textarea id="checkinNote" placeholder="例如：今天听到 lamb 时，宝宝学着小羊咩咩叫了～"></textarea>
+            <div class="form-bottom"><label class="photo-upload"><input type="file" id="checkinPhoto" accept="image/*"><svg><use href="#i-image"/></svg><span>添加照片</span></label><div class="mood-picker"><span>今日心情</span><button data-mood="😊" class="selected">😊</button><button data-mood="🥰">🥰</button><button data-mood="🤩">🤩</button><button data-mood="😴">😴</button></div><button class="primary-btn" id="submitCheckin">完成今日打卡 <span>→</span></button></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-library">
+        <div class="page-title"><div><span>SSS SONG LIBRARY</span><h2>SSS 启蒙资源库</h2><p>儿歌是主线，相关口语和绘本放在对应的学习日里。</p></div><button class="primary-btn compact" id="libraryUpload">＋ 添加资料</button></div>
+        <div class="filter-row"><button class="active" data-filter="all">全部资源</button><button data-filter="song">儿歌</button><button data-filter="phrase">口语</button><button data-filter="book">绘本</button><div class="search-box">⌕ <input id="resourceSearch" placeholder="搜索资源"></div></div>
+        <div class="resource-grid" id="resourceGrid"></div>
+      </section>
+
+      <section class="view" id="view-growth">
+        <div class="page-title"><div><span>MY LITTLE GROWTH</span><h2>宝贝成长</h2><p>今日学习里完成的每一次打卡，都会自动出现在这里。</p></div></div>
+        <div class="stats-grid"><div><span class="stat-icon">🔥</span><p>连续打卡</p><strong><b id="growthStreak">0</b> <small>天</small></strong><em>坚持陪伴，就是最棒的启蒙</em></div><div><span class="stat-icon green">♪</span><p>累计儿歌打卡</p><strong><b id="growthSongs">0</b> <small>天</small></strong><em>按实际完成记录统计</em></div><div><span class="stat-icon yellow">A</span><p>口语自然融入</p><strong><b id="growthPhrases">0</b> <small>句</small></strong><em>来自当天儿歌与绘本场景</em></div><div><span class="stat-icon blue">▤</span><p>绘本共读打卡</p><strong><b id="growthBooks">0</b> <small>天</small></strong><em>只统计有绘本的学习日</em></div></div>
+        <div class="growth-layout"><div class="growth-chart"><div class="card-head"><div><h3>近 7 天打卡足迹</h3><p>打卡后会立即点亮当天记录</p></div><span>真实记录</span></div><div class="bar-chart" id="barChart"></div></div><div class="achievement-card"><div class="card-head"><div><h3>成长徽章</h3><p id="achievementSummary">等待第一次打卡</p></div></div><div class="badges"><div id="badgeFirst" class="locked"><span>🌱</span><strong>启蒙第一步</strong><small>完成首次打卡</small></div><div id="badgeSeven" class="locked"><span>🔥</span><strong>坚持小达人</strong><small>连续打卡 7 天</small></div><div id="badgeSongs" class="locked"><span>🎵</span><strong>儿歌收藏家</strong><small>完成 10 天儿歌打卡</small></div><div id="badgeStar" class="locked"><span>⭐</span><strong>闪亮之星</strong><small>累计完成 14 天</small></div></div></div></div>
+        <div class="moments-card"><div class="card-head"><div><h3>成长瞬间</h3><p>记录亲子启蒙里的每一个“哇”</p></div><button>全部记录 →</button></div><div class="timeline" id="timeline"></div></div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav"><button class="active" data-view="today"><svg><use href="#i-home"/></svg>今日</button><button data-view="library"><svg><use href="#i-library"/></svg>资源</button><button data-view="growth"><svg><use href="#i-chart"/></svg>成长</button></nav>
+
+  <div class="modal" id="adminModal" aria-hidden="true"><div class="modal-backdrop"></div><div class="modal-panel admin-panel"><button class="modal-close"><svg><use href="#i-x"/></svg></button><div class="modal-title"><span>SSS CONTENT DESK</span><h2>添加学习资料</h2><p>把儿歌、当天口语或指定日期的绘本放进工作台。</p></div><div class="admin-tabs"><button class="active" data-admin-tab="upload">添加资料</button><button data-admin-tab="manage">管理内容</button></div><form class="admin-form" id="uploadForm"><div class="form-grid"><label><span>资料类型</span><select id="contentType"><option value="song">儿歌视频</option><option value="phrase">当天口语</option><option value="book">主题绘本</option></select></label><label><span>安排到第几天</span><select id="contentDay"></select></label><label class="wide"><span>内容标题</span><input id="contentTitle" required placeholder="例如：Twinkle Twinkle Little Star"></label><label class="wide"><span>陪伴说明</span><textarea id="contentDesc" placeholder="告诉妈妈当天怎么陪宝宝学习"></textarea></label><label class="wide"><span>百度网盘链接（可选）</span><input id="contentLink" type="url" placeholder="粘贴百度网盘分享链接"></label><label><span>网盘提取码（可选）</span><input id="contentCode" maxlength="8" placeholder="例如：7bem"></label></div><label class="drop-zone" id="dropZone"><input type="file" id="contentFile" accept="video/*,image/*,audio/*"><svg><use href="#i-upload"/></svg><strong>点击或拖拽上传资料</strong><span>支持 MP4、MOV、JPG、PNG、MP3；也可以只填写百度网盘链接</span><em id="fileName">尚未选择文件</em></label><button class="primary-btn full-btn" type="submit">保存到工作台</button></form><div class="manage-panel" id="managePanel" hidden><div id="manageList" class="manage-list"></div></div></div></div>
+
+  <div class="modal" id="bookModal" aria-hidden="true"><div class="modal-backdrop"></div><div class="modal-panel book-panel"><button class="modal-close"><svg><use href="#i-x"/></svg></button><div class="book-viewer-head"><span>今日绘本 · From Head to Toe</span><strong id="pageCounter">1 / 4</strong></div><div class="book-pages" id="bookPages"></div><div class="book-controls"><button id="prevPage">← 上一页</button><div id="pageDots"></div><button id="nextPage">下一页 →</button></div></div></div>
+
+  <div class="toast" id="toast"><span>✓</span><div><strong>打卡成功！</strong><p>今天的陪伴也很闪亮</p></div></div>
+  <div class="lead-float"><span>🎁</span><div><strong>免费领取</strong><small>3个月启蒙计划表</small></div><button>立即领取</button></div>
+  <script src="app.js?v=20260812-1015"></script>
+</body>
+</html>
