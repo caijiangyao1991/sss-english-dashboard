@@ -1,8 +1,7 @@
 const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
-const netdiskBase = "https://pan.baidu.com/s/1WbFWTcVA1rKsO_QnmR1erQ";
 const netdiskCode = "7bem";
-const sssNetdisk = (folder) => ({ link: `${netdiskBase}?pwd=${netdiskCode}#list/path=${encodeURIComponent(`/我的资源/小糍粑资料/sss儿歌/${folder}`)}`, code: netdiskCode });
+const sssNetdisk = () => ({ link: "", code: netdiskCode });
 const independentNetdiskLinks = {
   1: "https://pan.baidu.com/s/181gLjSdnlRUpXrrNZ8bU7A?pwd=7bem",
   2: "https://pan.baidu.com/s/1SY-DxTP1DNej3Kdb1yo-cA?pwd=7bem",
