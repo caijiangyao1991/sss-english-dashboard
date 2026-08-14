@@ -1,19 +1,39 @@
 const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 const netdiskBase = "https://pan.baidu.com/s/1WbFWTcVA1rKsO_QnmR1erQ";
-const netdiskSurl = "WbFWTcVA1rKsO_QnmR1erQ";
 const netdiskCode = "7bem";
 const sssNetdisk = (folder) => ({ link: `${netdiskBase}?pwd=${netdiskCode}#list/path=${encodeURIComponent(`/我的资源/小糍粑资料/sss儿歌/${folder}`)}`, code: netdiskCode });
-const netdiskFileIds = {
-  1: "480898532590471", 2: "326182912954260", 3: "671951900054927", 4: "1038528746088758",
-  5: "985858145498788", 8: "130021507687595", 9: "798661563784283", 10: "734203251911417",
-  11: "359508055581896", 12: "67017818405518", 13: "535989135989604", 15: "652376479987496",
-  16: "730580723356795", 17: "1112884598520857", 18: "876534290846817", 20: "354140135246272",
-  22: "34163348726285", 23: "853424066411974", 24: "522730039550731", 25: "79640314951908",
-  26: "30086539411587", 27: "681860785147989", 29: "697189525553563", 30: "45247313370152",
-  31: "1061017857854670", 32: "1108714937774966", 33: "261329902375109", 34: "25331026988136"
+const independentNetdiskLinks = {
+  1: "https://pan.baidu.com/s/181gLjSdnlRUpXrrNZ8bU7A?pwd=7bem",
+  2: "https://pan.baidu.com/s/1SY-DxTP1DNej3Kdb1yo-cA?pwd=7bem",
+  3: "https://pan.baidu.com/s/1b3TVkc-tcLvS0Q0PAseCHQ?pwd=7bem",
+  4: "https://pan.baidu.com/s/1NQe0fY6nM4d26kE3C6FBOA?pwd=7bem",
+  5: "https://pan.baidu.com/s/1Ejw1BSQeb7yLhpNPZEnY8w?pwd=7bem",
+  8: "https://pan.baidu.com/s/11USIib_bkFpol932AsP9jQ?pwd=7bem",
+  9: "https://pan.baidu.com/s/1Lzh7qeph7NVmoBGuWdoTFg?pwd=7bem",
+  10: "https://pan.baidu.com/s/1V0GbYXLGsN4YgoRhy7IcFw?pwd=7bem",
+  11: "https://pan.baidu.com/s/1A4YGxq1oM6rveZA_jEkD0A?pwd=7bem",
+  12: "https://pan.baidu.com/s/1EWHj95cqYZjkQTUJXINfjQ?pwd=7bem",
+  13: "https://pan.baidu.com/s/1JKhz2fJgAimtMvYn_vz-ow?pwd=7bem",
+  15: "https://pan.baidu.com/s/1KMFg5E6oC4pIijcRDCpavQ?pwd=7bem",
+  16: "https://pan.baidu.com/s/18LEzcgxVuU8MBknrfxvGdQ?pwd=7bem",
+  17: "https://pan.baidu.com/s/1WfwKx4Vegx2V54PWPmiHsA?pwd=7bem",
+  18: "https://pan.baidu.com/s/1SjGnTIa5vC7vaw_tkq2xdw?pwd=7bem",
+  20: "https://pan.baidu.com/s/1kT0ZZP5dZX2fFce_jYy6AA?pwd=7bem",
+  22: "https://pan.baidu.com/s/1gKghCF--Z79jfeaDyRLhHg?pwd=7bem",
+  23: "https://pan.baidu.com/s/1XV7cFFRL4kTWWK6N5twcmw?pwd=7bem",
+  24: "https://pan.baidu.com/s/13YFsivZceh-KjFGHwvgM6g?pwd=7bem",
+  25: "https://pan.baidu.com/s/1pE30Hb_4fGTpLDh60M275g?pwd=7bem",
+  26: "https://pan.baidu.com/s/11lwCLMoA-1S07wuFU0C5nw?pwd=7bem",
+  27: "https://pan.baidu.com/s/1-m5TxqxL8dLwL6a4aMD7wA?pwd=7bem",
+  29: "https://pan.baidu.com/s/1vFYkGG-UBudYLDMuFd8T8A?pwd=7bem",
+  30: "https://pan.baidu.com/s/1aI1UACfVGKMC85FbFeYNfA?pwd=7bem",
+  31: "https://pan.baidu.com/s/12bJza3qHNr_iYh2uGxFrXQ?pwd=7bem",
+  32: "https://pan.baidu.com/s/1jpaoCKWerICagDPHegHVEA?pwd=7bem",
+  33: "https://pan.baidu.com/s/1IoZ7Lv0UE5ZBqI0N7RqwHA?pwd=7bem",
+  34: "https://pan.baidu.com/s/1S0ahb3iHJvg8iN5WGTCPtA?pwd=7bem"
 };
-const sssFileNetdisk = (day) => ({ link: `https://pan.baidu.com/pfile/shareVideoNew?surl=${netdiskSurl}&fid=${netdiskFileIds[day]}&pwd=${netdiskCode}`, code: netdiskCode });
+const sssFileNetdisk = (day) => ({ link: independentNetdiskLinks[day], code: netdiskCode });
 const netdiskSelections = {
   1: ["DAY01 儿歌视频 Head Shoulders Knees & Toes", "Head Shoulders Knees & Toes (Sing It) 英文软字幕.mp4"],
   2: ["DAY02 绘本视频 Where Is Baby's Belly Button", "平铺绘本讲Where Is Baby's Belly Button.mp4"],
