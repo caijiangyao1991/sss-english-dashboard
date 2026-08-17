@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7eee7" />
+    <title>菜菜 & 小凡｜每月收益结算</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">MONTHLY SETTLEMENT</p>
+          <h1>菜菜 <span>&</span> 小凡</h1>
+          <p class="subtitle">快团收益分配小账本</p>
+        </div>
+        <div class="hero-badge" aria-hidden="true">
+          <span>60%</span>
+          <small>平分</small>
+          <i></i>
+          <span>40%</span>
+          <small>按出勤</small>
+        </div>
+      </header>
+
+      <section class="rule-strip" aria-label="分配规则">
+        <strong>结算规则</strong>
+        <span>总收益 × 60% → 两人平分</span>
+        <span class="dot">•</span>
+        <span>总收益 × 40% → 按营业天数占比分配</span>
+        <span class="dot">•</span>
+        <span>周日不计入营业日</span>
+      </section>
+
+      <form id="settlement-form">
+        <section class="card income-card">
+          <div class="section-heading">
+            <div>
+              <span class="step">01</span>
+              <h2>填写本月收益</h2>
+            </div>
+            <label class="month-field">
+              <span>结算月份</span>
+              <input id="settlement-month" type="month" required />
+            </label>
+          </div>
+
+          <div class="income-grid">
+            <label class="money-field">
+              <span class="field-icon platform">团</span>
+              <span class="field-copy">
+                <strong>快团平台收益</strong>
+                <small>填写已扣除退款、成本后的金额</small>
+              </span>
+              <span class="currency">¥</span>
+              <input id="platform-income" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" />
+            </label>
+
+            <label class="money-field">
+              <span class="field-icon wechat">微</span>
+              <span class="field-copy">
+                <strong>微信接单收益</strong>
+                <small>DMM 海淘等微信订单净收益</small>
+              </span>
+              <span class="currency">¥</span>
+              <input id="wechat-income" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" />
+            </label>
+
+            <label class="money-field optional">
+              <span class="field-icon adjust">调</span>
+              <span class="field-copy">
+                <strong>其他调整</strong>
+                <small>奖金填正数，额外支出填负数</small>
+              </span>
+              <span class="currency">¥</span>
+              <input id="adjustment" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
+            </label>
+          </div>
+
+          <div class="income-total">
+            <span>本月可分配总收益</span>
+            <strong id="income-preview">¥ 0.00</strong>
+          </div>
+        </section>
+
+        <section class="card attendance-card">
+          <div class="section-heading attendance-heading">
+            <div>
+              <span class="step">02</span>
+              <h2>记录营业时间</h2>
+            </div>
+            <div class="mode-switch" role="group" aria-label="营业时间填写方式">
+              <button type="button" class="mode-button active" data-mode="days">直接填天数</button>
+              <button type="button" class="mode-button" data-mode="dates">选择具体日期</button>
+            </div>
+          </div>
+
+          <div id="days-mode" class="mode-panel active">
+            <p class="panel-tip">不需要计算整月天数，只需填写两人各自实际营业的天数。</p>
+            <div class="people-grid">
+              <label class="person-field caicai">
+                <span class="avatar">菜</span>
+                <span><strong>菜菜</strong><small>本月营业天数</small></span>
+                <input id="caicai-days" type="number" min="0" step="1" inputmode="numeric" value="0" />
+                <em>天</em>
+              </label>
+              <label class="person-field xiaofan">
+                <span class="avatar">凡</span>
+                <span><strong>小凡</strong><small>本月营业天数</small></span>
+                <input id="xiaofan-days" type="number" min="0" step="1" inputmode="numeric" value="0" />
+                <em>天</em>
+              </label>
+            </div>
+            <p id="business-day-hint" class="business-day-hint"></p>
+          </div>
+
+          <div id="dates-mode" class="mode-panel">
+            <div class="calendar-toolbar">
+              <p>点击日期切换：菜菜 → 小凡 → 两人 → 未选择。周日自动休息。</p>
+              <button id="clear-dates" type="button" class="text-button">清空日期</button>
+            </div>
+            <div class="calendar-legend">
+              <span><i class="legend-dot caicai-dot"></i>菜菜</span>
+              <span><i class="legend-dot xiaofan-dot"></i>小凡</span>
+              <span><i class="legend-dot both-dot"></i>两人都营业</span>
+            </div>
+            <div class="calendar-wrap">
+              <div class="weekdays" aria-hidden="true">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+              </div>
+              <div id="calendar" class="calendar"></div>
+            </div>
+            <div class="date-counts">
+              <span>菜菜 <strong id="caicai-date-count">0</strong> 天</span>
+              <span>小凡 <strong id="xiaofan-date-count">0</strong> 天</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="action-row">
+          <button id="calculate-button" class="primary-button" type="submit">开始结算</button>
+          <button id="reset-button" class="secondary-button" type="button">重新填写</button>
+        </section>
+      </form>
+
+      <section id="result-section" class="result-section" aria-live="polite" hidden>
+        <div class="result-heading">
+          <div>
+            <p class="eyebrow">SETTLEMENT RESULT</p>
+            <h2><span id="result-month"></span> 结算结果</h2>
+          </div>
+          <button id="print-button" type="button" class="secondary-button compact">打印 / 保存 PDF</button>
+        </div>
+
+        <div class="result-grid">
+          <article class="result-card caicai-result">
+            <div class="result-person"><span class="avatar">菜</span><strong>菜菜应得</strong></div>
+            <p id="caicai-total" class="big-money">¥ 0.00</p>
+            <div class="result-lines">
+              <span>公共池平分 <b id="caicai-equal">¥ 0.00</b></span>
+              <span>出勤分配 <b id="caicai-work">¥ 0.00</b></span>
+              <span>营业天数 <b id="caicai-result-days">0 天</b></span>
+            </div>
+          </article>
+
+          <article class="result-card xiaofan-result">
+            <div class="result-person"><span class="avatar">凡</span><strong>小凡应得</strong></div>
+            <p id="xiaofan-total" class="big-money">¥ 0.00</p>
+            <div class="result-lines">
+              <span>公共池平分 <b id="xiaofan-equal">¥ 0.00</b></span>
+              <span>出勤分配 <b id="xiaofan-work">¥ 0.00</b></span>
+              <span>营业天数 <b id="xiaofan-result-days">0 天</b></span>
+            </div>
+          </article>
+        </div>
+
+        <div class="breakdown-card">
+          <div><span>总收益</span><strong id="summary-total">¥ 0.00</strong></div>
+          <div><span>60% 公共池</span><strong id="summary-equal-pool">¥ 0.00</strong></div>
+          <div><span>40% 出勤池</span><strong id="summary-work-pool">¥ 0.00</strong></div>
+          <div><span>出勤占比</span><strong id="summary-ratio">—</strong></div>
+        </div>
+
+        <p class="formula-note">每人收益 = 总收益 × 60% ÷ 2 ＋ 总收益 × 40% × 个人营业天数 ÷ 两人营业总天数</p>
+      </section>
+
+      <section class="card history-card">
+        <div class="section-heading">
+          <div>
+            <span class="step">03</span>
+            <h2>历史结算</h2>
+          </div>
+          <button id="clear-history" type="button" class="text-button danger">清空记录</button>
+        </div>
+        <div id="history-list" class="history-list">
+          <p class="empty-history">还没有结算记录，完成第一次结算后会自动保存在这台设备上。</p>
+        </div>
+      </section>
+
+      <footer>菜菜 & 小凡的小账本 · 数据仅保存在当前浏览器</footer>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
