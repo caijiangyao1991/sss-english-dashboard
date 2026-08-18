@@ -1,315 +1,260 @@
-const form = document.querySelector('#settlement-form');
-const monthInput = document.querySelector('#settlement-month');
-const platformInput = document.querySelector('#platform-income');
-const wechatInput = document.querySelector('#wechat-income');
-const adjustmentInput = document.querySelector('#adjustment');
-const caicaiDaysInput = document.querySelector('#caicai-days');
-const xiaofanDaysInput = document.querySelector('#xiaofan-days');
-const incomePreview = document.querySelector('#income-preview');
-const resultSection = document.querySelector('#result-section');
-const calendar = document.querySelector('#calendar');
-const historyList = document.querySelector('#history-list');
-const toast = document.querySelector('#toast');
+const $ = (selector, scope = document) => scope.querySelector(selector);
+const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+
+const form = $('#settlement-form');
+const startMonthInput = $('#start-month');
+const incomeInputs = ['#first-platform', '#first-wechat', '#second-platform', '#second-wechat', '#adjustment'].map($);
+const caicaiDaysInput = $('#caicai-days');
+const xiaofanDaysInput = $('#xiaofan-days');
+const resultSection = $('#result-section');
+const historyList = $('#history-list');
+const toast = $('#toast');
 
 let attendanceMode = 'days';
 let selectedDates = {};
 
-const money = new Intl.NumberFormat('zh-CN', {
-  style: 'currency',
-  currency: 'CNY',
-  minimumFractionDigits: 2,
-});
+const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', minimumFractionDigits: 2 });
 
-function numberValue(input) {
-  return Number.parseFloat(input.value) || 0;
-}
+function numberValue(input) { return Number.parseFloat(input.value) || 0; }
+function roundMoney(value) { return Math.round((value + Number.EPSILON) * 100) / 100; }
+function formatMoney(value) { return money.format(value).replace('CN¥', '¥'); }
+function monthKey(year, monthIndex) { return `${year}-${String(monthIndex + 1).padStart(2, '0')}`; }
 
-function roundMoney(value) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
-}
-
-function formatMoney(value) {
-  return money.format(value).replace('CN¥', '¥');
-}
-
-function defaultMonth() {
+function defaultStartMonth() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return monthKey(previous.getFullYear(), previous.getMonth());
 }
 
-function getMonthDetails(monthValue) {
-  const [year, month] = monthValue.split('-').map(Number);
-  const daysInMonth = new Date(year, month, 0).getDate();
+function parseMonth(value) {
+  const [year, month] = value.split('-').map(Number);
+  return new Date(year, month - 1, 1);
+}
+
+function addMonths(value, count) {
+  const date = parseMonth(value);
+  date.setMonth(date.getMonth() + count);
+  return monthKey(date.getFullYear(), date.getMonth());
+}
+
+function monthLabel(value) {
+  const [year, month] = value.split('-');
+  return `${year}年${Number(month)}月`;
+}
+
+function getMonthDetails(value) {
+  const date = parseMonth(value);
+  const year = date.getFullYear();
+  const monthIndex = date.getMonth();
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
   let businessDays = 0;
-
   for (let day = 1; day <= daysInMonth; day += 1) {
-    if (new Date(year, month - 1, day).getDay() !== 0) businessDays += 1;
+    if (new Date(year, monthIndex, day).getDay() !== 0) businessDays += 1;
   }
+  return { year, monthIndex, daysInMonth, businessDays };
+}
 
-  return { year, month, daysInMonth, businessDays };
+function currentPeriod() {
+  const first = startMonthInput.value;
+  return { first, second: addMonths(first, 1), key: `${first}_${addMonths(first, 1)}` };
+}
+
+function updatePeriodUI() {
+  if (!startMonthInput.value) return;
+  const { first, second } = currentPeriod();
+  $('#first-month-title').textContent = monthLabel(first);
+  $('#second-month-title').textContent = monthLabel(second);
+  $('#top-period').textContent = `${monthLabel(first)} — ${monthLabel(second)}`;
+  const totalAvailable = getMonthDetails(first).businessDays + getMonthDetails(second).businessDays;
+  $('#available-days').textContent = totalAvailable;
+  caicaiDaysInput.max = totalAvailable;
+  xiaofanDaysInput.max = totalAvailable;
 }
 
 function updateIncomePreview() {
-  const total = numberValue(platformInput) + numberValue(wechatInput) + numberValue(adjustmentInput);
-  incomePreview.textContent = formatMoney(total);
-}
-
-function updateBusinessDayHint() {
-  if (!monthInput.value) return;
-  const { businessDays } = getMonthDetails(monthInput.value);
-  document.querySelector('#business-day-hint').textContent = `该月除去周日后，共有 ${businessDays} 个可营业日。`;
-  caicaiDaysInput.max = businessDays;
-  xiaofanDaysInput.max = businessDays;
-}
-
-function renderCalendar() {
-  if (!monthInput.value) return;
-  const { year, month, daysInMonth } = getMonthDetails(monthInput.value);
-  const firstDay = new Date(year, month - 1, 1).getDay();
-  const mondayFirstOffset = firstDay === 0 ? 6 : firstDay - 1;
-  calendar.innerHTML = '';
-
-  for (let index = 0; index < mondayFirstOffset; index += 1) {
-    const blank = document.createElement('div');
-    blank.className = 'calendar-day empty';
-    calendar.appendChild(blank);
-  }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const date = new Date(year, month - 1, day);
-    const dateKey = `${monthInput.value}-${String(day).padStart(2, '0')}`;
-    const button = document.createElement('button');
-    const state = selectedDates[dateKey] || 'none';
-    const isSunday = date.getDay() === 0;
-
-    button.type = 'button';
-    button.className = `calendar-day${isSunday ? ' sunday' : ''}${state !== 'none' ? ` selected-${state}` : ''}`;
-    button.disabled = isSunday;
-    button.dataset.date = dateKey;
-    button.innerHTML = `<span class="day-number">${day}</span><span class="day-state">${stateLabel(state, isSunday)}</span>`;
-    button.setAttribute('aria-label', `${month}月${day}日，${stateLabel(state, isSunday)}`);
-    calendar.appendChild(button);
-  }
-
-  updateDateCounts();
+  const firstSubtotal = roundMoney(numberValue($('#first-platform')) + numberValue($('#first-wechat')));
+  const secondSubtotal = roundMoney(numberValue($('#second-platform')) + numberValue($('#second-wechat')));
+  const total = roundMoney(firstSubtotal + secondSubtotal + numberValue($('#adjustment')));
+  $('#first-subtotal').textContent = formatMoney(firstSubtotal);
+  $('#second-subtotal').textContent = formatMoney(secondSubtotal);
+  $('#income-preview').textContent = formatMoney(total);
 }
 
 function stateLabel(state, isSunday = false) {
   if (isSunday) return '休息';
-  return { none: '', caicai: '菜菜', xiaofan: '小凡', both: '两人' }[state];
+  return { none: '', caicai: '菜', xiaofan: '凡', both: '两人' }[state];
 }
 
-function cycleDateState(dateKey) {
-  const states = ['none', 'caicai', 'xiaofan', 'both'];
-  const currentIndex = states.indexOf(selectedDates[dateKey] || 'none');
-  const nextState = states[(currentIndex + 1) % states.length];
+function renderMonthCalendar(value) {
+  const { year, monthIndex, daysInMonth, businessDays } = getMonthDetails(value);
+  const firstWeekday = new Date(year, monthIndex, 1).getDay();
+  const offset = firstWeekday === 0 ? 6 : firstWeekday - 1;
+  const days = [];
+  for (let index = 0; index < offset; index += 1) days.push('<div class="calendar-day empty"></div>');
 
-  if (nextState === 'none') delete selectedDates[dateKey];
-  else selectedDates[dateKey] = nextState;
-  renderCalendar();
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(year, monthIndex, day);
+    const key = `${value}-${String(day).padStart(2, '0')}`;
+    const state = selectedDates[key] || 'none';
+    const sunday = date.getDay() === 0;
+    const classes = ['calendar-day', sunday ? 'sunday' : '', state !== 'none' ? `selected-${state}` : ''].filter(Boolean).join(' ');
+    days.push(`<button type="button" class="${classes}" ${sunday ? 'disabled' : ''} data-date="${key}" aria-label="${monthIndex + 1}月${day}日 ${stateLabel(state, sunday)}"><b>${day}</b><small>${stateLabel(state, sunday)}</small></button>`);
+  }
+
+  return `<article class="calendar-card"><div class="calendar-title"><strong>${monthLabel(value)}</strong><span>${businessDays} 个可营业日</span></div><div class="weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div class="calendar-grid">${days.join('')}</div></article>`;
+}
+
+function renderCalendars() {
+  const { first, second } = currentPeriod();
+  $('#calendar-pair').innerHTML = renderMonthCalendar(first) + renderMonthCalendar(second);
+  updateDateCounts();
+}
+
+function cycleDateState(key) {
+  const states = ['none', 'caicai', 'xiaofan', 'both'];
+  const next = states[(states.indexOf(selectedDates[key] || 'none') + 1) % states.length];
+  if (next === 'none') delete selectedDates[key]; else selectedDates[key] = next;
+  renderCalendars();
 }
 
 function getDateCounts() {
-  return Object.values(selectedDates).reduce(
-    (counts, state) => {
-      if (state === 'caicai' || state === 'both') counts.caicai += 1;
-      if (state === 'xiaofan' || state === 'both') counts.xiaofan += 1;
-      return counts;
-    },
-    { caicai: 0, xiaofan: 0 },
-  );
+  return Object.values(selectedDates).reduce((counts, state) => {
+    if (state === 'caicai' || state === 'both') counts.caicai += 1;
+    if (state === 'xiaofan' || state === 'both') counts.xiaofan += 1;
+    return counts;
+  }, { caicai: 0, xiaofan: 0 });
 }
 
 function updateDateCounts() {
   const counts = getDateCounts();
-  document.querySelector('#caicai-date-count').textContent = counts.caicai;
-  document.querySelector('#xiaofan-date-count').textContent = counts.xiaofan;
+  $('#caicai-date-count').textContent = counts.caicai;
+  $('#xiaofan-date-count').textContent = counts.xiaofan;
 }
 
 function setMode(mode) {
   attendanceMode = mode;
-  document.querySelectorAll('.mode-button').forEach((button) => {
-    button.classList.toggle('active', button.dataset.mode === mode);
-  });
-  document.querySelector('#days-mode').classList.toggle('active', mode === 'days');
-  document.querySelector('#dates-mode').classList.toggle('active', mode === 'dates');
+  $$('.mode-button').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
+  $('#days-mode').classList.toggle('active', mode === 'days');
+  $('#dates-mode').classList.toggle('active', mode === 'dates');
 }
 
-function showToast(message) {
-  toast.textContent = message;
+function showToast(title, message) {
+  $('strong', toast).textContent = title;
+  $('p', toast).textContent = message;
   toast.classList.add('show');
-  window.clearTimeout(showToast.timer);
-  showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 2600);
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-function validateInputs(total, caicaiDays, xiaofanDays) {
-  if (total <= 0) return '请填写大于 0 元的可分配收益。';
-  if (caicaiDays + xiaofanDays <= 0) return '请至少填写一人的营业天数。';
-
+function validate(total, counts) {
+  if (total <= 0) return '请填写大于 0 元的双月可分配收益。';
+  if (counts.caicai + counts.xiaofan <= 0) return '请至少填写一人的营业天数。';
   if (attendanceMode === 'days') {
-    const { businessDays } = getMonthDetails(monthInput.value);
-    if (!Number.isInteger(caicaiDays) || !Number.isInteger(xiaofanDays)) return '营业天数需要填写整数。';
-    if (caicaiDays < 0 || xiaofanDays < 0) return '营业天数不能小于 0。';
-    if (caicaiDays > businessDays || xiaofanDays > businessDays) {
-      return `该月除去周日后最多有 ${businessDays} 个营业日，请检查天数。`;
-    }
+    const { first, second } = currentPeriod();
+    const maximum = getMonthDetails(first).businessDays + getMonthDetails(second).businessDays;
+    if (!Number.isInteger(counts.caicai) || !Number.isInteger(counts.xiaofan)) return '营业天数需要填写整数。';
+    if (counts.caicai < 0 || counts.xiaofan < 0) return '营业天数不能小于 0。';
+    if (counts.caicai > maximum || counts.xiaofan > maximum) return `本期每人最多有 ${maximum} 个可营业日，请检查天数。`;
   }
   return '';
 }
 
 function calculateSettlement(event) {
   event.preventDefault();
-  const total = roundMoney(numberValue(platformInput) + numberValue(wechatInput) + numberValue(adjustmentInput));
-  const counts = attendanceMode === 'dates'
-    ? getDateCounts()
-    : { caicai: numberValue(caicaiDaysInput), xiaofan: numberValue(xiaofanDaysInput) };
-  const validationMessage = validateInputs(total, counts.caicai, counts.xiaofan);
-
-  if (validationMessage) {
-    showToast(validationMessage);
-    return;
-  }
+  const total = roundMoney(incomeInputs.reduce((sum, input) => sum + numberValue(input), 0));
+  const counts = attendanceMode === 'dates' ? getDateCounts() : { caicai: numberValue(caicaiDaysInput), xiaofan: numberValue(xiaofanDaysInput) };
+  const message = validate(total, counts);
+  if (message) { showToast('还差一点', message); return; }
 
   const totalDays = counts.caicai + counts.xiaofan;
-  const equalShare = roundMoney(total * 0.3);
-  const caicaiRatio = counts.caicai / totalDays;
-  const caicaiTotal = roundMoney(total * (0.3 + 0.4 * caicaiRatio));
+  const equalShare = roundMoney(total * .3);
+  const caicaiTotal = roundMoney(total * (.3 + .4 * counts.caicai / totalDays));
   const xiaofanTotal = roundMoney(total - caicaiTotal);
   const caicaiWork = roundMoney(caicaiTotal - equalShare);
   const xiaofanWork = roundMoney(xiaofanTotal - equalShare);
-  const equalPool = roundMoney(equalShare * 2);
-  const workPool = roundMoney(caicaiWork + xiaofanWork);
-
+  const { first, second, key } = currentPeriod();
   const result = {
-    id: Date.now(),
-    month: monthInput.value,
-    total,
-    equalPool,
-    workPool,
-    equalShare,
-    caicaiDays: counts.caicai,
-    xiaofanDays: counts.xiaofan,
-    caicaiWork,
-    xiaofanWork,
-    caicaiTotal,
-    xiaofanTotal,
-    mode: attendanceMode,
+    id: Date.now(), periodKey: key, first, second, total,
+    equalShare, equalPool: roundMoney(equalShare * 2), workPool: roundMoney(caicaiWork + xiaofanWork),
+    caicaiDays: counts.caicai, xiaofanDays: counts.xiaofan,
+    caicaiWork, xiaofanWork, caicaiTotal, xiaofanTotal,
   };
-
   displayResult(result);
   saveHistory(result);
+  showToast('结算完成', '本期结果已计算并保存在这台设备上。');
   resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function displayResult(result) {
-  const [year, month] = result.month.split('-');
-  document.querySelector('#result-month').textContent = `${year} 年 ${Number(month)} 月`;
-  document.querySelector('#caicai-total').textContent = formatMoney(result.caicaiTotal);
-  document.querySelector('#xiaofan-total').textContent = formatMoney(result.xiaofanTotal);
-  document.querySelector('#caicai-equal').textContent = formatMoney(result.equalShare);
-  document.querySelector('#xiaofan-equal').textContent = formatMoney(result.equalShare);
-  document.querySelector('#caicai-work').textContent = formatMoney(result.caicaiWork);
-  document.querySelector('#xiaofan-work').textContent = formatMoney(result.xiaofanWork);
-  document.querySelector('#caicai-result-days').textContent = `${result.caicaiDays} 天`;
-  document.querySelector('#xiaofan-result-days').textContent = `${result.xiaofanDays} 天`;
-  document.querySelector('#summary-total').textContent = formatMoney(result.total);
-  document.querySelector('#summary-equal-pool').textContent = formatMoney(result.equalPool);
-  document.querySelector('#summary-work-pool').textContent = formatMoney(result.workPool);
-  document.querySelector('#summary-ratio').textContent = `菜菜 ${(result.caicaiDays / (result.caicaiDays + result.xiaofanDays) * 100).toFixed(1)}% · 小凡 ${(result.xiaofanDays / (result.caicaiDays + result.xiaofanDays) * 100).toFixed(1)}%`;
+  $('#result-period').textContent = `${monthLabel(result.first)} — ${monthLabel(result.second)} 结算结果`;
+  $('#caicai-total').textContent = formatMoney(result.caicaiTotal);
+  $('#xiaofan-total').textContent = formatMoney(result.xiaofanTotal);
+  $('#caicai-equal').textContent = formatMoney(result.equalShare);
+  $('#xiaofan-equal').textContent = formatMoney(result.equalShare);
+  $('#caicai-work').textContent = formatMoney(result.caicaiWork);
+  $('#xiaofan-work').textContent = formatMoney(result.xiaofanWork);
+  $('#caicai-result-days').textContent = `${result.caicaiDays} 天`;
+  $('#xiaofan-result-days').textContent = `${result.xiaofanDays} 天`;
+  $('#summary-total').textContent = formatMoney(result.total);
+  $('#summary-equal-pool').textContent = formatMoney(result.equalPool);
+  $('#summary-work-pool').textContent = formatMoney(result.workPool);
+  const days = result.caicaiDays + result.xiaofanDays;
+  $('#summary-ratio').textContent = `菜菜 ${(result.caicaiDays / days * 100).toFixed(1)}% · 小凡 ${(result.xiaofanDays / days * 100).toFixed(1)}%`;
   resultSection.hidden = false;
 }
 
 function getHistory() {
-  try {
-    return JSON.parse(localStorage.getItem('kuaTuanSettlementHistory')) || [];
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem('kuaTuanBimonthlyHistory')) || []; } catch { return []; }
 }
 
 function saveHistory(result) {
-  const history = getHistory().filter((item) => item.month !== result.month);
+  const history = getHistory().filter(item => item.periodKey !== result.periodKey);
   history.unshift(result);
-  localStorage.setItem('kuaTuanSettlementHistory', JSON.stringify(history.slice(0, 24)));
+  localStorage.setItem('kuaTuanBimonthlyHistory', JSON.stringify(history.slice(0, 12)));
   renderHistory();
 }
 
 function renderHistory() {
   const history = getHistory();
   if (!history.length) {
-    historyList.innerHTML = '<p class="empty-history">还没有结算记录，完成第一次结算后会自动保存在这台设备上。</p>';
+    historyList.innerHTML = '<p class="empty-history">完成第一次双月结算后，记录会出现在这里。</p>';
     return;
   }
-
-  historyList.innerHTML = history.map((item) => {
-    const [year, month] = item.month.split('-');
-    return `
-      <article class="history-item">
-        <div><strong>${year} 年 ${Number(month)} 月</strong><small>总收益 ${formatMoney(item.total)} · 菜菜 ${item.caicaiDays} 天 / 小凡 ${item.xiaofanDays} 天</small></div>
-        <div class="history-amount"><span>菜菜</span><b>${formatMoney(item.caicaiTotal)}</b></div>
-        <div class="history-amount"><span>小凡</span><b>${formatMoney(item.xiaofanTotal)}</b></div>
-        <button class="delete-history" type="button" data-history-id="${item.id}" aria-label="删除这条记录">×</button>
-      </article>`;
-  }).join('');
+  historyList.innerHTML = history.map(item => `<article class="history-item"><div><strong>${monthLabel(item.first)} — ${monthLabel(item.second)}</strong><small>总收益 ${formatMoney(item.total)} · 菜菜 ${item.caicaiDays} 天 / 小凡 ${item.xiaofanDays} 天</small></div><div class="history-amount"><span>菜菜</span><b>${formatMoney(item.caicaiTotal)}</b></div><div class="history-amount"><span>小凡</span><b>${formatMoney(item.xiaofanTotal)}</b></div><button type="button" class="delete-history" data-history-id="${item.id}" aria-label="删除记录">×</button></article>`).join('');
 }
 
 function resetForm() {
-  platformInput.value = '';
-  wechatInput.value = '';
-  adjustmentInput.value = '';
-  caicaiDaysInput.value = '0';
-  xiaofanDaysInput.value = '0';
+  incomeInputs.forEach(input => { input.value = ''; });
+  caicaiDaysInput.value = 0;
+  xiaofanDaysInput.value = 0;
   selectedDates = {};
   setMode('days');
   updateIncomePreview();
-  renderCalendar();
+  renderCalendars();
   resultSection.hidden = true;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-[platformInput, wechatInput, adjustmentInput].forEach((input) => input.addEventListener('input', updateIncomePreview));
+function formatToday() {
+  const now = new Date();
+  const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  $('#today-text').textContent = `${now.getMonth() + 1}月${now.getDate()}日 · ${weekdays[now.getDay()]}`;
+}
 
-document.querySelectorAll('.mode-button').forEach((button) => {
-  button.addEventListener('click', () => setMode(button.dataset.mode));
-});
-
-monthInput.addEventListener('change', () => {
-  selectedDates = {};
-  updateBusinessDayHint();
-  renderCalendar();
-});
-
-calendar.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-date]');
-  if (button && !button.disabled) cycleDateState(button.dataset.date);
-});
-
-document.querySelector('#clear-dates').addEventListener('click', () => {
-  selectedDates = {};
-  renderCalendar();
-});
-
-document.querySelector('#reset-button').addEventListener('click', resetForm);
-document.querySelector('#print-button').addEventListener('click', () => window.print());
-document.querySelector('#clear-history').addEventListener('click', () => {
-  if (getHistory().length && window.confirm('确定清空全部历史结算记录吗？')) {
-    localStorage.removeItem('kuaTuanSettlementHistory');
-    renderHistory();
-  }
-});
-
-historyList.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-history-id]');
-  if (!button) return;
-  const history = getHistory().filter((item) => String(item.id) !== button.dataset.historyId);
-  localStorage.setItem('kuaTuanSettlementHistory', JSON.stringify(history));
-  renderHistory();
-});
-
+incomeInputs.forEach(input => input.addEventListener('input', updateIncomePreview));
+startMonthInput.addEventListener('change', () => { selectedDates = {}; updatePeriodUI(); renderCalendars(); });
+$$('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+$('#calendar-pair').addEventListener('click', event => { const button = event.target.closest('[data-date]'); if (button && !button.disabled) cycleDateState(button.dataset.date); });
+$('#clear-dates').addEventListener('click', () => { selectedDates = {}; renderCalendars(); });
+$('#reset-button').addEventListener('click', resetForm);
+$('#print-button').addEventListener('click', () => window.print());
+$('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部双月结算记录吗？')) { localStorage.removeItem('kuaTuanBimonthlyHistory'); renderHistory(); } });
+historyList.addEventListener('click', event => { const button = event.target.closest('[data-history-id]'); if (!button) return; const next = getHistory().filter(item => String(item.id) !== button.dataset.historyId); localStorage.setItem('kuaTuanBimonthlyHistory', JSON.stringify(next)); renderHistory(); });
 form.addEventListener('submit', calculateSettlement);
 
-monthInput.value = defaultMonth();
+startMonthInput.value = defaultStartMonth();
+formatToday();
+updatePeriodUI();
 updateIncomePreview();
-updateBusinessDayHint();
-renderCalendar();
+renderCalendars();
 renderHistory();
