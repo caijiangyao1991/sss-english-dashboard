@@ -15,6 +15,8 @@ const toast = $('#toast');
 
 let attendanceMode = 'days';
 let selectedDates = {};
+let restDates = {};
+let restMode = false;
 let allocation = getSavedAllocation();
 
 const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', minimumFractionDigits: 2 });
@@ -84,6 +86,17 @@ function getMonthDetails(value) {
   return { year, monthIndex, daysInMonth, businessDays };
 }
 
+function getAvailableBusinessDays(value) {
+  const details = getMonthDetails(value);
+  let extraRestDays = 0;
+  for (let day = 1; day <= details.daysInMonth; day += 1) {
+    const date = new Date(details.year, details.monthIndex, day);
+    const key = `${value}-${String(day).padStart(2, '0')}`;
+    if (date.getDay() !== 0 && restDates[key]) extraRestDays += 1;
+  }
+  return details.businessDays - extraRestDays;
+}
+
 function currentPeriod() {
   const first = startMonthInput.value;
   return { first, second: addMonths(first, 1), key: `${first}_${addMonths(first, 1)}` };
@@ -95,7 +108,7 @@ function updatePeriodUI() {
   $('#first-month-title').textContent = monthLabel(first);
   $('#second-month-title').textContent = monthLabel(second);
   $('#top-period').textContent = `${monthLabel(first)} — ${monthLabel(second)}`;
-  const totalAvailable = getMonthDetails(first).businessDays + getMonthDetails(second).businessDays;
+  const totalAvailable = getAvailableBusinessDays(first) + getAvailableBusinessDays(second);
   $('#available-days').textContent = totalAvailable;
   caicaiDaysInput.max = totalAvailable;
   xiaofanDaysInput.max = totalAvailable;
@@ -127,7 +140,8 @@ function stateLabel(state, isSunday = false) {
 }
 
 function renderMonthCalendar(value) {
-  const { year, monthIndex, daysInMonth, businessDays } = getMonthDetails(value);
+  const { year, monthIndex, daysInMonth } = getMonthDetails(value);
+  const businessDays = getAvailableBusinessDays(value);
   const firstWeekday = new Date(year, monthIndex, 1).getDay();
   const offset = firstWeekday === 0 ? 6 : firstWeekday - 1;
   const days = [];
@@ -138,8 +152,11 @@ function renderMonthCalendar(value) {
     const key = `${value}-${String(day).padStart(2, '0')}`;
     const state = selectedDates[key] || 'none';
     const sunday = date.getDay() === 0;
-    const classes = ['calendar-day', sunday ? 'sunday' : '', state !== 'none' ? `selected-${state}` : ''].filter(Boolean).join(' ');
-    days.push(`<button type="button" class="${classes}" ${sunday ? 'disabled' : ''} data-date="${key}" aria-label="${monthIndex + 1}月${day}日 ${stateLabel(state, sunday)}"><b>${day}</b><small>${stateLabel(state, sunday)}</small></button>`);
+    const extraRest = Boolean(restDates[key]);
+    const unavailable = sunday || (extraRest && !restMode);
+    const classes = ['calendar-day', sunday || extraRest ? 'sunday' : '', extraRest ? 'extra-rest' : '', state !== 'none' ? `selected-${state}` : ''].filter(Boolean).join(' ');
+    const label = sunday ? '周日休息' : extraRest ? '额外休息' : stateLabel(state);
+    days.push(`<button type="button" class="${classes}" ${unavailable ? 'disabled' : ''} data-date="${key}" aria-label="${monthIndex + 1}月${day}日 ${label}"><b>${day}</b><small>${label}</small></button>`);
   }
 
   return `<article class="calendar-card"><div class="calendar-title"><strong>${monthLabel(value)}</strong><span>${businessDays} 个可营业日</span></div><div class="weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div class="calendar-grid">${days.join('')}</div></article>`;
@@ -156,6 +173,21 @@ function cycleDateState(key) {
   const next = states[(states.indexOf(selectedDates[key] || 'none') + 1) % states.length];
   if (next === 'none') delete selectedDates[key]; else selectedDates[key] = next;
   renderCalendars();
+}
+
+function toggleRestDay(key) {
+  delete selectedDates[key];
+  if (restDates[key]) delete restDates[key]; else restDates[key] = true;
+  updatePeriodUI();
+  renderCalendars();
+}
+
+function updateRestModeUI() {
+  const button = $('#toggle-rest-mode');
+  button.classList.toggle('active', restMode);
+  button.textContent = restMode ? '完成休息日设置' : '设置额外休息日';
+  $('#calendar-instruction').textContent = restMode ? '点击日期设置或取消休息日' : '点击日期记录营业人';
+  $('#calendar-instruction-note').textContent = restMode ? '法定节假日、临时休息日都可以在这里标记。' : '每次点击依次切换：菜菜 → 小凡 → 两人 → 未选择';
 }
 
 function getDateCounts() {
@@ -202,7 +234,7 @@ function validate(total, counts) {
   if (!readAllocation()) return '公共池和出勤池比例合计必须为 100%。';
   if (attendanceMode === 'days') {
     const { first, second } = currentPeriod();
-    const maximum = getMonthDetails(first).businessDays + getMonthDetails(second).businessDays;
+    const maximum = getAvailableBusinessDays(first) + getAvailableBusinessDays(second);
     if (!Number.isInteger(counts.caicai) || !Number.isInteger(counts.xiaofan)) return '营业天数需要填写整数。';
     if (counts.caicai < 0 || counts.xiaofan < 0) return '营业天数不能小于 0。';
     if (counts.caicai > maximum || counts.xiaofan > maximum) return `本期每人最多有 ${maximum} 个可营业日，请检查天数。`;
@@ -318,6 +350,9 @@ function resetForm() {
   caicaiDaysInput.value = 0;
   xiaofanDaysInput.value = 0;
   selectedDates = {};
+  restDates = {};
+  restMode = false;
+  updateRestModeUI();
   setMode('days');
   updateIncomePreview();
   renderCalendars();
@@ -332,7 +367,7 @@ function formatToday() {
 }
 
 incomeInputs.forEach(input => input.addEventListener('input', updateIncomePreview));
-startMonthInput.addEventListener('change', () => { selectedDates = {}; updatePeriodUI(); renderCalendars(); });
+startMonthInput.addEventListener('change', () => { selectedDates = {}; restDates = {}; restMode = false; updateRestModeUI(); updatePeriodUI(); renderCalendars(); });
 caicaiDaysInput.addEventListener('input', () => syncPartnerDays(caicaiDaysInput, xiaofanDaysInput));
 xiaofanDaysInput.addEventListener('input', () => syncPartnerDays(xiaofanDaysInput, caicaiDaysInput));
 $('#period-jump').addEventListener('click', () => { startMonthInput.focus(); if (typeof startMonthInput.showPicker === 'function') startMonthInput.showPicker(); else startMonthInput.click(); });
@@ -340,8 +375,9 @@ equalRateInput.addEventListener('change', () => { readAllocation(); });
 workRateInput.addEventListener('change', () => { readAllocation(); });
 $$('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
 $$('[data-view]').forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
-$('#calendar-pair').addEventListener('click', event => { const button = event.target.closest('[data-date]'); if (button && !button.disabled) cycleDateState(button.dataset.date); });
-$('#clear-dates').addEventListener('click', () => { selectedDates = {}; renderCalendars(); });
+$('#calendar-pair').addEventListener('click', event => { const button = event.target.closest('[data-date]'); if (button && !button.disabled) { if (restMode) toggleRestDay(button.dataset.date); else cycleDateState(button.dataset.date); } });
+$('#toggle-rest-mode').addEventListener('click', () => { restMode = !restMode; updateRestModeUI(); renderCalendars(); });
+$('#clear-dates').addEventListener('click', () => { selectedDates = {}; restDates = {}; updatePeriodUI(); renderCalendars(); });
 $('#reset-button').addEventListener('click', resetForm);
 $('#print-button').addEventListener('click', () => window.print());
 $('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部双月结算记录吗？')) { localStorage.removeItem('kuaTuanBimonthlyHistory'); renderHistory(); } });
@@ -355,4 +391,5 @@ formatToday();
 updatePeriodUI();
 updateIncomePreview();
 renderCalendars();
+updateRestModeUI();
 renderHistory();

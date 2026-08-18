@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260818-4">
+  <link rel="stylesheet" href="styles.css?v=20260818-5">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -153,8 +153,8 @@
 
             <div id="dates-mode" class="mode-panel">
               <div class="calendar-toolbar">
-                <div><strong>点击日期记录营业人</strong><p>每次点击依次切换：菜菜 → 小凡 → 两人 → 未选择</p></div>
-                <button id="clear-dates" class="soft-button" type="button"><svg><use href="#i-trash"/></svg>清空日期</button>
+                <div><strong id="calendar-instruction">点击日期记录营业人</strong><p id="calendar-instruction-note">每次点击依次切换：菜菜 → 小凡 → 两人 → 未选择</p></div>
+                <div class="calendar-actions"><button id="toggle-rest-mode" class="soft-button" type="button">设置额外休息日</button><button id="clear-dates" class="soft-button" type="button"><svg><use href="#i-trash"/></svg>清空日期</button></div>
               </div>
               <div class="calendar-legend"><span><i class="caicai-dot"></i>菜菜</span><span><i class="xiaofan-dot"></i>小凡</span><span><i class="both-dot"></i>两人都营业</span><span><i class="rest-dot"></i>周日休息</span></div>
               <div id="calendar-pair" class="calendar-pair"></div>
@@ -233,6 +233,6 @@
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260818-4"></script>
+  <script src="app.js?v=20260818-5"></script>
 </body>
 </html>
