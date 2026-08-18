@@ -3,7 +3,7 @@ const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)]
 
 const form = $('#settlement-form');
 const startMonthInput = $('#start-month');
-const incomeInputs = ['#first-platform', '#first-wechat', '#second-platform', '#second-wechat', '#adjustment'].map($);
+const incomeInputs = ['#first-platform', '#first-wechat', '#second-platform', '#second-wechat', '#adjustment'].map(selector => $(selector));
 const caicaiDaysInput = $('#caicai-days');
 const xiaofanDaysInput = $('#xiaofan-days');
 const resultSection = $('#result-section');
@@ -138,6 +138,15 @@ function setMode(mode) {
   $('#dates-mode').classList.toggle('active', mode === 'dates');
 }
 
+function switchView(viewName) {
+  $$('.view').forEach(view => view.classList.toggle('active', view.id === `view-${viewName}`));
+  $$('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === viewName));
+  $('#page-greeting').innerHTML = viewName === 'history'
+    ? '看看以前每一期是怎么分配的 <span>☀</span>'
+    : '嗨，来完成这期双月结算吧 <span>☀</span>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function showToast(title, message) {
   $('strong', toast).textContent = title;
   $('p', toast).textContent = message;
@@ -181,6 +190,7 @@ function calculateSettlement(event) {
   };
   displayResult(result);
   saveHistory(result);
+  switchView('settlement');
   showToast('结算完成', '本期结果已计算并保存在这台设备上。');
   resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -244,6 +254,7 @@ function formatToday() {
 incomeInputs.forEach(input => input.addEventListener('input', updateIncomePreview));
 startMonthInput.addEventListener('change', () => { selectedDates = {}; updatePeriodUI(); renderCalendars(); });
 $$('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+$$('[data-view]').forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
 $('#calendar-pair').addEventListener('click', event => { const button = event.target.closest('[data-date]'); if (button && !button.disabled) cycleDateState(button.dataset.date); });
 $('#clear-dates').addEventListener('click', () => { selectedDates = {}; renderCalendars(); });
 $('#reset-button').addEventListener('click', resetForm);

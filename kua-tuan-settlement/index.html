@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260817-2">
+  <link rel="stylesheet" href="styles.css?v=20260818-1">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -31,11 +31,9 @@
         <span><strong>双人小账本</strong><small>菜菜 & 小凡 · 双月结算</small></span>
       </a>
 
-      <nav class="main-nav" aria-label="结算步骤">
-        <a class="nav-item active" href="#income"><svg><use href="#i-wallet"/></svg><span>填写双月收益</span><em>01</em></a>
-        <a class="nav-item" href="#attendance"><svg><use href="#i-calendar"/></svg><span>记录营业时间</span><em>02</em></a>
-        <a class="nav-item" href="#result-section"><svg><use href="#i-chart"/></svg><span>查看分配结果</span><em>03</em></a>
-        <a class="nav-item" href="#history"><svg><use href="#i-clock"/></svg><span>历史结算记录</span><em>04</em></a>
+      <nav class="main-nav" aria-label="主要页面">
+        <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>双月收益结算</span></button>
+        <button class="nav-item" type="button" data-view="history"><svg><use href="#i-clock"/></svg><span>历史收益分配</span></button>
       </nav>
 
       <div class="sidebar-rule">
@@ -57,7 +55,7 @@
       <header class="topbar">
         <div class="date-greeting">
           <small id="today-text"></small>
-          <h1>嗨，来完成这期双月结算吧 <span>☀</span></h1>
+          <h1 id="page-greeting">嗨，来完成这期双月结算吧 <span>☀</span></h1>
         </div>
         <div class="top-actions">
           <span class="cycle-pill"><svg><use href="#i-calendar"/></svg><b id="top-period">选择结算周期</b></span>
@@ -67,6 +65,7 @@
       </header>
 
       <div class="workspace">
+        <section class="view active" id="view-settlement">
         <section class="hero-card">
           <div class="hero-copy">
             <span class="eyebrow">BIMONTHLY SETTLEMENT</span>
@@ -194,14 +193,20 @@
           </div>
           <p class="formula-note">每人收益 = 双月总收益 × 60% ÷ 2 ＋ 双月总收益 × 40% × 个人营业天数 ÷ 两人营业总天数</p>
         </section>
+        </section>
 
-        <section class="section-card history-card" id="history">
-          <div class="card-head compact-head">
+        <section class="view" id="view-history">
+          <section class="history-banner">
             <div class="head-icon yellow"><svg><use href="#i-clock"/></svg></div>
-            <div><span>STEP 04</span><h2>历史双月结算</h2><p>最近 12 期记录保存在当前浏览器中。</p></div>
-            <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空记录</button>
-          </div>
-          <div id="history-list" class="history-list"><p class="empty-history">完成第一次双月结算后，记录会出现在这里。</p></div>
+            <div><span>HISTORY</span><h2>历史收益分配</h2><p>每次完成双月结算后，结果都会保存在这里。</p></div>
+          </section>
+          <section class="section-card history-card" id="history">
+            <div class="history-toolbar">
+              <div><strong>双月结算记录</strong><small>最近保存 12 期，仅存储在当前浏览器</small></div>
+              <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空记录</button>
+            </div>
+            <div id="history-list" class="history-list"><p class="empty-history">完成第一次双月结算后，记录会出现在这里。</p></div>
+          </section>
         </section>
 
         <footer>菜菜 & 小凡的双人小账本 · 清楚分账，安心合作</footer>
@@ -210,12 +215,10 @@
   </div>
 
   <nav class="mobile-nav">
-    <a href="#income"><svg><use href="#i-wallet"/></svg>收益</a>
-    <a href="#attendance"><svg><use href="#i-calendar"/></svg>出勤</a>
-    <a href="#result-section"><svg><use href="#i-chart"/></svg>结果</a>
-    <a href="#history"><svg><use href="#i-clock"/></svg>记录</a>
+    <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>双月结算</button>
+    <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260817-2"></script>
+  <script src="app.js?v=20260818-1"></script>
 </body>
 </html>
