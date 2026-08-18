@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260818-3">
+  <link rel="stylesheet" href="styles.css?v=20260818-4">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -204,6 +204,17 @@
             <div><span>HISTORY</span><h2>历史收益分配</h2><p>每次完成双月结算后，结果都会保存在这里。</p></div>
           </section>
           <section class="section-card history-card" id="history">
+            <div class="year-summary-head">
+              <div><span>YEARLY SUMMARY</span><h3>年度收益汇总</h3><p>按双月结算周期的起始年份统计。</p></div>
+              <label><span>查看年份</span><select id="history-year"></select></label>
+            </div>
+            <div class="year-summary-grid">
+              <article class="year-summary-total"><span>全年总收益</span><strong id="year-total">¥0.00</strong><small id="year-periods">已结算 0 期</small></article>
+              <article><span>菜菜全年所得</span><strong id="year-caicai">¥0.00</strong><small id="year-caicai-days">营业 0 天</small></article>
+              <article><span>小凡全年所得</span><strong id="year-xiaofan">¥0.00</strong><small id="year-xiaofan-days">营业 0 天</small></article>
+              <article><span>全年公共池</span><strong id="year-equal-pool">¥0.00</strong><small>两人平分部分</small></article>
+              <article><span>全年出勤池</span><strong id="year-work-pool">¥0.00</strong><small>按营业天数分配</small></article>
+            </div>
             <div class="history-toolbar">
               <div><strong>双月结算记录</strong><small>最近保存 12 期，仅存储在当前浏览器</small></div>
               <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空记录</button>
@@ -222,6 +233,6 @@
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260818-3"></script>
+  <script src="app.js?v=20260818-4"></script>
 </body>
 </html>

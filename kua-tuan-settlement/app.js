@@ -10,6 +10,7 @@ const equalRateInput = $('#equal-rate');
 const workRateInput = $('#work-rate');
 const resultSection = $('#result-section');
 const historyList = $('#history-list');
+const historyYearSelect = $('#history-year');
 const toast = $('#toast');
 
 let attendanceMode = 'days';
@@ -272,8 +273,39 @@ function saveHistory(result) {
   renderHistory();
 }
 
+function renderYearSummary(history) {
+  const selectedYear = historyYearSelect.value;
+  const years = [...new Set(history.map(item => Number(String(item.first).slice(0, 4))).filter(Boolean))].sort((a, b) => b - a);
+  const fallbackYear = new Date().getFullYear();
+  const availableYears = years.length ? years : [fallbackYear];
+  historyYearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year} 年</option>`).join('');
+  historyYearSelect.value = availableYears.includes(Number(selectedYear)) ? selectedYear : String(availableYears[0]);
+
+  const year = Number(historyYearSelect.value);
+  const yearlyHistory = history.filter(item => Number(String(item.first).slice(0, 4)) === year);
+  const totals = yearlyHistory.reduce((summary, item) => ({
+    total: summary.total + Number(item.total || 0),
+    caicai: summary.caicai + Number(item.caicaiTotal || 0),
+    xiaofan: summary.xiaofan + Number(item.xiaofanTotal || 0),
+    equalPool: summary.equalPool + Number(item.equalPool || 0),
+    workPool: summary.workPool + Number(item.workPool || 0),
+    caicaiDays: summary.caicaiDays + Number(item.caicaiDays || 0),
+    xiaofanDays: summary.xiaofanDays + Number(item.xiaofanDays || 0),
+  }), { total: 0, caicai: 0, xiaofan: 0, equalPool: 0, workPool: 0, caicaiDays: 0, xiaofanDays: 0 });
+
+  $('#year-total').textContent = formatMoney(totals.total);
+  $('#year-caicai').textContent = formatMoney(totals.caicai);
+  $('#year-xiaofan').textContent = formatMoney(totals.xiaofan);
+  $('#year-equal-pool').textContent = formatMoney(totals.equalPool);
+  $('#year-work-pool').textContent = formatMoney(totals.workPool);
+  $('#year-periods').textContent = `已结算 ${yearlyHistory.length} 期`;
+  $('#year-caicai-days').textContent = `营业 ${totals.caicaiDays} 天`;
+  $('#year-xiaofan-days').textContent = `营业 ${totals.xiaofanDays} 天`;
+}
+
 function renderHistory() {
   const history = getHistory();
+  renderYearSummary(history);
   if (!history.length) {
     historyList.innerHTML = '<p class="empty-history">完成第一次双月结算后，记录会出现在这里。</p>';
     return;
@@ -313,6 +345,7 @@ $('#clear-dates').addEventListener('click', () => { selectedDates = {}; renderCa
 $('#reset-button').addEventListener('click', resetForm);
 $('#print-button').addEventListener('click', () => window.print());
 $('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部双月结算记录吗？')) { localStorage.removeItem('kuaTuanBimonthlyHistory'); renderHistory(); } });
+historyYearSelect.addEventListener('change', () => renderYearSummary(getHistory()));
 historyList.addEventListener('click', event => { const button = event.target.closest('[data-history-id]'); if (!button) return; const next = getHistory().filter(item => String(item.id) !== button.dataset.historyId); localStorage.setItem('kuaTuanBimonthlyHistory', JSON.stringify(next)); renderHistory(); });
 form.addEventListener('submit', calculateSettlement);
 
