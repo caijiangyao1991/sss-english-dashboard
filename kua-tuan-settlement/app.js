@@ -100,6 +100,17 @@ function updatePeriodUI() {
   xiaofanDaysInput.max = totalAvailable;
 }
 
+function syncPartnerDays(changedInput, partnerInput) {
+  if (changedInput.value === '') {
+    partnerInput.value = '';
+    return;
+  }
+  const maximum = Number(changedInput.max) || 0;
+  const days = Math.min(maximum, Math.max(0, Math.round(numberValue(changedInput))));
+  changedInput.value = days;
+  partnerInput.value = maximum - days;
+}
+
 function updateIncomePreview() {
   const firstSubtotal = roundMoney(numberValue($('#first-platform')) + numberValue($('#first-wechat')));
   const secondSubtotal = roundMoney(numberValue($('#second-platform')) + numberValue($('#second-wechat')));
@@ -194,6 +205,7 @@ function validate(total, counts) {
     if (!Number.isInteger(counts.caicai) || !Number.isInteger(counts.xiaofan)) return '营业天数需要填写整数。';
     if (counts.caicai < 0 || counts.xiaofan < 0) return '营业天数不能小于 0。';
     if (counts.caicai > maximum || counts.xiaofan > maximum) return `本期每人最多有 ${maximum} 个可营业日，请检查天数。`;
+    if (counts.caicai + counts.xiaofan !== maximum) return `两人的营业天数合计需要等于本期 ${maximum} 个可营业日。`;
   }
   return '';
 }
@@ -289,6 +301,8 @@ function formatToday() {
 
 incomeInputs.forEach(input => input.addEventListener('input', updateIncomePreview));
 startMonthInput.addEventListener('change', () => { selectedDates = {}; updatePeriodUI(); renderCalendars(); });
+caicaiDaysInput.addEventListener('input', () => syncPartnerDays(caicaiDaysInput, xiaofanDaysInput));
+xiaofanDaysInput.addEventListener('input', () => syncPartnerDays(xiaofanDaysInput, caicaiDaysInput));
 $('#period-jump').addEventListener('click', () => { startMonthInput.focus(); if (typeof startMonthInput.showPicker === 'function') startMonthInput.showPicker(); else startMonthInput.click(); });
 equalRateInput.addEventListener('change', () => { readAllocation(); });
 workRateInput.addEventListener('change', () => { readAllocation(); });
