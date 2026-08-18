@@ -6,12 +6,15 @@ const startMonthInput = $('#start-month');
 const incomeInputs = ['#first-platform', '#first-wechat', '#second-platform', '#second-wechat', '#adjustment'].map(selector => $(selector));
 const caicaiDaysInput = $('#caicai-days');
 const xiaofanDaysInput = $('#xiaofan-days');
+const equalRateInput = $('#equal-rate');
+const workRateInput = $('#work-rate');
 const resultSection = $('#result-section');
 const historyList = $('#history-list');
 const toast = $('#toast');
 
 let attendanceMode = 'days';
 let selectedDates = {};
+let allocation = getSavedAllocation();
 
 const money = new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', minimumFractionDigits: 2 });
 
@@ -19,6 +22,32 @@ function numberValue(input) { return Number.parseFloat(input.value) || 0; }
 function roundMoney(value) { return Math.round((value + Number.EPSILON) * 100) / 100; }
 function formatMoney(value) { return money.format(value).replace('CN¥', '¥'); }
 function monthKey(year, monthIndex) { return `${year}-${String(monthIndex + 1).padStart(2, '0')}`; }
+
+function getSavedAllocation() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('kuaTuanAllocation'));
+    if (saved && Number.isFinite(saved.equal) && Number.isFinite(saved.work) && saved.equal + saved.work === 100) return saved;
+  } catch {}
+  return { equal: 60, work: 40 };
+}
+
+function updateAllocationUI() {
+  equalRateInput.value = allocation.equal;
+  workRateInput.value = allocation.work;
+  $('.rule-progress span').style.width = `${allocation.equal}%`;
+  $('.rule-progress i').style.width = `${allocation.work}%`;
+  $('.sidebar-rule small').textContent = `两项合计 100%，每周日固定休息`;
+}
+
+function readAllocation() {
+  const equal = Math.min(100, Math.max(0, Math.round(numberValue(equalRateInput))));
+  const work = Math.min(100, Math.max(0, Math.round(numberValue(workRateInput))));
+  if (equal + work !== 100) return null;
+  allocation = { equal, work };
+  localStorage.setItem('kuaTuanAllocation', JSON.stringify(allocation));
+  updateAllocationUI();
+  return allocation;
+}
 
 function defaultStartMonth() {
   const now = new Date();
@@ -158,6 +187,7 @@ function showToast(title, message) {
 function validate(total, counts) {
   if (total <= 0) return '请填写大于 0 元的双月可分配收益。';
   if (counts.caicai + counts.xiaofan <= 0) return '请至少填写一人的营业天数。';
+  if (!readAllocation()) return '公共池和出勤池比例合计必须为 100%。';
   if (attendanceMode === 'days') {
     const { first, second } = currentPeriod();
     const maximum = getMonthDetails(first).businessDays + getMonthDetails(second).businessDays;
@@ -176,8 +206,10 @@ function calculateSettlement(event) {
   if (message) { showToast('还差一点', message); return; }
 
   const totalDays = counts.caicai + counts.xiaofan;
-  const equalShare = roundMoney(total * .3);
-  const caicaiTotal = roundMoney(total * (.3 + .4 * counts.caicai / totalDays));
+  const equalRate = allocation.equal / 100;
+  const workRate = allocation.work / 100;
+  const equalShare = roundMoney(total * equalRate / 2);
+  const caicaiTotal = roundMoney(total * (equalRate / 2 + workRate * counts.caicai / totalDays));
   const xiaofanTotal = roundMoney(total - caicaiTotal);
   const caicaiWork = roundMoney(caicaiTotal - equalShare);
   const xiaofanWork = roundMoney(xiaofanTotal - equalShare);
@@ -186,6 +218,7 @@ function calculateSettlement(event) {
     id: Date.now(), periodKey: key, first, second, total,
     equalShare, equalPool: roundMoney(equalShare * 2), workPool: roundMoney(caicaiWork + xiaofanWork),
     caicaiDays: counts.caicai, xiaofanDays: counts.xiaofan,
+    equalRate: allocation.equal, workRate: allocation.work,
     caicaiWork, xiaofanWork, caicaiTotal, xiaofanTotal,
   };
   displayResult(result);
@@ -208,6 +241,9 @@ function displayResult(result) {
   $('#summary-total').textContent = formatMoney(result.total);
   $('#summary-equal-pool').textContent = formatMoney(result.equalPool);
   $('#summary-work-pool').textContent = formatMoney(result.workPool);
+  $('#summary-equal-label').textContent = `${result.equalRate}% 公共池`;
+  $('#summary-work-label').textContent = `${result.workRate}% 出勤池`;
+  $('#formula-note').textContent = `每人收益 = 双月总收益 × ${result.equalRate}% ÷ 2 ＋ 双月总收益 × ${result.workRate}% × 个人营业天数 ÷ 两人营业总天数`;
   const days = result.caicaiDays + result.xiaofanDays;
   $('#summary-ratio').textContent = `菜菜 ${(result.caicaiDays / days * 100).toFixed(1)}% · 小凡 ${(result.xiaofanDays / days * 100).toFixed(1)}%`;
   resultSection.hidden = false;
@@ -253,6 +289,9 @@ function formatToday() {
 
 incomeInputs.forEach(input => input.addEventListener('input', updateIncomePreview));
 startMonthInput.addEventListener('change', () => { selectedDates = {}; updatePeriodUI(); renderCalendars(); });
+$('#period-jump').addEventListener('click', () => { startMonthInput.focus(); if (typeof startMonthInput.showPicker === 'function') startMonthInput.showPicker(); else startMonthInput.click(); });
+equalRateInput.addEventListener('change', () => { readAllocation(); });
+workRateInput.addEventListener('change', () => { readAllocation(); });
 $$('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
 $$('[data-view]').forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
 $('#calendar-pair').addEventListener('click', event => { const button = event.target.closest('[data-date]'); if (button && !button.disabled) cycleDateState(button.dataset.date); });
@@ -264,6 +303,7 @@ historyList.addEventListener('click', event => { const button = event.target.clo
 form.addEventListener('submit', calculateSettlement);
 
 startMonthInput.value = defaultStartMonth();
+updateAllocationUI();
 formatToday();
 updatePeriodUI();
 updateIncomePreview();

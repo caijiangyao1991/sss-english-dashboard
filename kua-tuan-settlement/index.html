@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260818-1">
+  <link rel="stylesheet" href="styles.css?v=20260818-2">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -40,8 +40,11 @@
         <span class="rule-spark">✦</span>
         <strong>我们的分配约定</strong>
         <div class="rule-progress"><span></span><i></i></div>
-        <p><b>60%</b> 公共池两人平分<br><b>40%</b> 按营业天数分配</p>
-        <small>每周日固定休息，不计营业日</small>
+        <div class="allocation-fields" aria-label="分配比例设置">
+          <label><span>公共池</span><input id="equal-rate" type="number" min="0" max="100" step="1" value="60"><b>%</b></label>
+          <label><span>出勤池</span><input id="work-rate" type="number" min="0" max="100" step="1" value="40"><b>%</b></label>
+        </div>
+        <small>两项合计 100%，每周日固定休息</small>
       </div>
 
       <div class="profile-mini">
@@ -58,7 +61,7 @@
           <h1 id="page-greeting">嗨，来完成这期双月结算吧 <span>☀</span></h1>
         </div>
         <div class="top-actions">
-          <span class="cycle-pill"><svg><use href="#i-calendar"/></svg><b id="top-period">选择结算周期</b></span>
+          <button class="cycle-pill" id="period-jump" type="button" title="点击调整结算周期"><svg><use href="#i-calendar"/></svg><b id="top-period">选择结算周期</b><span>调整</span></button>
           <div class="avatar caicai-avatar">菜</div>
           <div class="avatar xiaofan-avatar">凡</div>
         </div>
@@ -187,11 +190,11 @@
 
           <div class="result-breakdown">
             <div><span>双月总收益</span><strong id="summary-total">¥0.00</strong></div>
-            <div><span>60% 公共池</span><strong id="summary-equal-pool">¥0.00</strong></div>
-            <div><span>40% 出勤池</span><strong id="summary-work-pool">¥0.00</strong></div>
+            <div><span id="summary-equal-label">60% 公共池</span><strong id="summary-equal-pool">¥0.00</strong></div>
+            <div><span id="summary-work-label">40% 出勤池</span><strong id="summary-work-pool">¥0.00</strong></div>
             <div><span>营业天数占比</span><strong id="summary-ratio">—</strong></div>
           </div>
-          <p class="formula-note">每人收益 = 双月总收益 × 60% ÷ 2 ＋ 双月总收益 × 40% × 个人营业天数 ÷ 两人营业总天数</p>
+          <p class="formula-note" id="formula-note">每人收益 = 双月总收益 × 60% ÷ 2 ＋ 双月总收益 × 40% × 个人营业天数 ÷ 两人营业总天数</p>
         </section>
         </section>
 
@@ -219,6 +222,6 @@
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260818-1"></script>
+  <script src="app.js?v=20260818-2"></script>
 </body>
 </html>
