@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#fffaf2">
-  <meta name="description" content="菜菜和小凡的双月收益结算工作台">
-  <title>菜菜 & 小凡｜双月收益结算工作台</title>
+  <meta name="description" content="菜菜和小凡的单月收益结算工作台">
+  <title>菜菜 & 小凡｜单月收益结算工作台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260818-5">
+  <link rel="stylesheet" href="styles.css?v=20260821-1">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -28,11 +28,11 @@
     <aside class="sidebar">
       <a class="brand" href="#top">
         <span class="brand-mark">¥</span>
-        <span><strong>双人小账本</strong><small>菜菜 & 小凡 · 双月结算</small></span>
+        <span><strong>双人小账本</strong><small>菜菜 & 小凡 · 单月结算</small></span>
       </a>
 
       <nav class="main-nav" aria-label="主要页面">
-        <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>双月收益结算</span></button>
+        <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>单月收益结算</span></button>
         <button class="nav-item" type="button" data-view="history"><svg><use href="#i-clock"/></svg><span>历史收益分配</span></button>
       </nav>
 
@@ -58,7 +58,7 @@
       <header class="topbar">
         <div class="date-greeting">
           <small id="today-text"></small>
-          <h1 id="page-greeting">嗨，来完成这期双月结算吧 <span>☀</span></h1>
+          <h1 id="page-greeting">嗨，来完成本月结算吧 <span>☀</span></h1>
         </div>
         <div class="top-actions">
           <button class="cycle-pill" id="period-jump" type="button" title="点击调整结算周期"><svg><use href="#i-calendar"/></svg><b id="top-period">选择结算周期</b><span>调整</span></button>
@@ -71,11 +71,11 @@
         <section class="view active" id="view-settlement">
         <section class="hero-card">
           <div class="hero-copy">
-            <span class="eyebrow">BIMONTHLY SETTLEMENT</span>
-            <h2>两个月的努力，<br>在这里清清楚楚地分好</h2>
+            <span class="eyebrow">MONTHLY SETTLEMENT</span>
+            <h2>一个月的努力，<br>在这里清清楚楚地分好</h2>
             <p>收入分开记、营业时间认真算，最后每一分钱都有依据。</p>
             <div class="hero-meta">
-              <span>✓ 双月合并结算</span>
+              <span>✓ 每月独立结算</span>
               <span>✓ 周日自动休息</span>
               <span>✓ 结果自动保存</span>
             </div>
@@ -96,34 +96,28 @@
           <section class="section-card" id="income">
             <div class="card-head">
               <div class="head-icon coral"><svg><use href="#i-wallet"/></svg></div>
-              <div><span>STEP 01</span><h2>填写两个月的收益</h2><p>选择第一个月，系统会自动带出连续的第二个月。</p></div>
-              <label class="period-picker"><small>周期起始月</small><input id="start-month" type="month" required></label>
+              <div><span>STEP 01</span><h2>填写本月收益</h2><p>选择需要结算的月份，再填写该月的净收益。</p></div>
+              <label class="period-picker"><small>结算月份</small><input id="start-month" type="month" required></label>
             </div>
 
-            <div class="month-income-grid">
+            <div class="month-income-grid single-month">
               <article class="month-income-card first-month-card">
-                <div class="month-card-title"><div><span>第一个月</span><h3 id="first-month-title">—</h3></div><strong id="first-subtotal">¥0.00</strong></div>
+                <div class="month-card-title"><div><span>本月收益</span><h3 id="first-month-title">—</h3></div><strong id="first-subtotal">¥0.00</strong></div>
                 <label class="income-row"><span class="income-icon kuai">团</span><span><b>快团平台收益</b><small>已扣退款及成本</small></span><em>¥</em><input id="first-platform" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
                 <label class="income-row"><span class="income-icon wechat">微</span><span><b>微信接单收益</b><small>DMM 海淘等净收益</small></span><em>¥</em><input id="first-wechat" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
-              </article>
-
-              <article class="month-income-card second-month-card">
-                <div class="month-card-title"><div><span>第二个月</span><h3 id="second-month-title">—</h3></div><strong id="second-subtotal">¥0.00</strong></div>
-                <label class="income-row"><span class="income-icon kuai">团</span><span><b>快团平台收益</b><small>已扣退款及成本</small></span><em>¥</em><input id="second-platform" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
-                <label class="income-row"><span class="income-icon wechat">微</span><span><b>微信接单收益</b><small>DMM 海淘等净收益</small></span><em>¥</em><input id="second-wechat" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
               </article>
             </div>
 
             <div class="adjust-total-row">
-              <label class="adjust-field"><span class="income-icon adjust">调</span><span><b>双月其他调整</b><small>奖金填正数，额外支出填负数</small></span><em>¥</em><input id="adjustment" type="number" step="0.01" inputmode="decimal" placeholder="0.00"></label>
-              <div class="grand-total"><span>本期可分配总收益</span><strong id="income-preview">¥0.00</strong><small>两个自然月合计</small></div>
+              <label class="adjust-field"><span class="income-icon adjust">调</span><span><b>本月其他调整</b><small>奖金填正数，额外支出填负数</small></span><em>¥</em><input id="adjustment" type="number" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+              <div class="grand-total"><span>本月可分配总收益</span><strong id="income-preview">¥0.00</strong><small>本自然月合计</small></div>
             </div>
           </section>
 
           <section class="section-card" id="attendance">
             <div class="card-head attendance-head">
               <div class="head-icon mint"><svg><use href="#i-calendar"/></svg></div>
-              <div><span>STEP 02</span><h2>记录双月营业时间</h2><p>可以直接填总天数，也可以按日期逐天选择。</p></div>
+              <div><span>STEP 02</span><h2>记录本月营业时间</h2><p>可以直接填总天数，也可以按日期逐天选择。</p></div>
               <div class="mode-switch" role="group" aria-label="营业时间填写方式">
                 <button type="button" class="mode-button active" data-mode="days">直接填天数</button>
                 <button type="button" class="mode-button" data-mode="dates">选择具体日期</button>
@@ -132,19 +126,19 @@
 
             <div id="days-mode" class="mode-panel active">
               <div class="attendance-summary">
-                <div><span>双月可营业日</span><strong id="available-days">0</strong><small>天 / 期（已排除周日）</small></div>
+                <div><span>本月可营业日</span><strong id="available-days">0</strong><small>天 / 月（已排除周日）</small></div>
                 <p>填写任意一人的营业天数，另一人的天数会自动补足；修改任意一边都会重新计算。</p>
               </div>
               <div class="people-grid">
                 <label class="person-card caicai-card">
                   <span class="person-avatar">菜</span>
-                  <span><small>合伙人</small><strong>菜菜</strong><em>双月营业总天数</em></span>
+                  <span><small>合伙人</small><strong>菜菜</strong><em>本月营业总天数</em></span>
                   <input id="caicai-days" type="number" min="0" step="1" inputmode="numeric" value="0">
                   <b>天</b>
                 </label>
                 <label class="person-card xiaofan-card">
                   <span class="person-avatar">凡</span>
-                  <span><small>合伙人</small><strong>小凡</strong><em>双月营业总天数</em></span>
+                  <span><small>合伙人</small><strong>小凡</strong><em>本月营业总天数</em></span>
                   <input id="xiaofan-days" type="number" min="0" step="1" inputmode="numeric" value="0">
                   <b>天</b>
                 </label>
@@ -157,7 +151,7 @@
                 <div class="calendar-actions"><button id="toggle-rest-mode" class="soft-button" type="button">设置额外休息日</button><button id="clear-dates" class="soft-button" type="button"><svg><use href="#i-trash"/></svg>清空日期</button></div>
               </div>
               <div class="calendar-legend"><span><i class="caicai-dot"></i>菜菜</span><span><i class="xiaofan-dot"></i>小凡</span><span><i class="both-dot"></i>两人都营业</span><span><i class="rest-dot"></i>周日休息</span></div>
-              <div id="calendar-pair" class="calendar-pair"></div>
+              <div id="calendar-pair" class="calendar-pair single-month"></div>
               <div class="selected-counts"><span>菜菜已选 <b id="caicai-date-count">0</b> 天</span><span>小凡已选 <b id="xiaofan-date-count">0</b> 天</span></div>
             </div>
           </section>
@@ -165,13 +159,13 @@
           <div class="submit-bar">
             <div><svg><use href="#i-sparkle"/></svg><span><strong>信息填好了吗？</strong><small>点击后自动计算并保存本期结果</small></span></div>
             <button id="reset-button" class="ghost-button" type="button">重新填写</button>
-            <button class="primary-button" type="submit">生成双月结算单 <span>→</span></button>
+            <button class="primary-button" type="submit">生成单月结算单 <span>→</span></button>
           </div>
         </form>
 
         <section id="result-section" class="result-section" hidden>
           <div class="result-top">
-            <div><span>STEP 03 · SETTLEMENT RESULT</span><h2 id="result-period">双月结算结果</h2><p>以下金额已按约定比例自动分配。</p></div>
+            <div><span>STEP 03 · SETTLEMENT RESULT</span><h2 id="result-period">单月结算结果</h2><p>以下金额已按约定比例自动分配。</p></div>
             <button id="print-button" class="print-button" type="button"><svg><use href="#i-print"/></svg>打印 / 保存 PDF</button>
           </div>
 
@@ -179,33 +173,33 @@
             <article class="person-result caicai-result">
               <div class="result-name"><span class="person-avatar">菜</span><div><small>CAICAI</small><strong>菜菜应得</strong></div><i>✓</i></div>
               <p id="caicai-total">¥0.00</p>
-              <div class="result-details"><span>公共池平分<b id="caicai-equal">¥0.00</b></span><span>出勤池分配<b id="caicai-work">¥0.00</b></span><span>双月营业<b id="caicai-result-days">0 天</b></span></div>
+              <div class="result-details"><span>公共池平分<b id="caicai-equal">¥0.00</b></span><span>出勤池分配<b id="caicai-work">¥0.00</b></span><span>本月营业<b id="caicai-result-days">0 天</b></span></div>
             </article>
             <article class="person-result xiaofan-result">
               <div class="result-name"><span class="person-avatar">凡</span><div><small>XIAOFAN</small><strong>小凡应得</strong></div><i>✓</i></div>
               <p id="xiaofan-total">¥0.00</p>
-              <div class="result-details"><span>公共池平分<b id="xiaofan-equal">¥0.00</b></span><span>出勤池分配<b id="xiaofan-work">¥0.00</b></span><span>双月营业<b id="xiaofan-result-days">0 天</b></span></div>
+              <div class="result-details"><span>公共池平分<b id="xiaofan-equal">¥0.00</b></span><span>出勤池分配<b id="xiaofan-work">¥0.00</b></span><span>本月营业<b id="xiaofan-result-days">0 天</b></span></div>
             </article>
           </div>
 
           <div class="result-breakdown">
-            <div><span>双月总收益</span><strong id="summary-total">¥0.00</strong></div>
+            <div><span>本月总收益</span><strong id="summary-total">¥0.00</strong></div>
             <div><span id="summary-equal-label">60% 公共池</span><strong id="summary-equal-pool">¥0.00</strong></div>
             <div><span id="summary-work-label">40% 出勤池</span><strong id="summary-work-pool">¥0.00</strong></div>
             <div><span>营业天数占比</span><strong id="summary-ratio">—</strong></div>
           </div>
-          <p class="formula-note" id="formula-note">每人收益 = 双月总收益 × 60% ÷ 2 ＋ 双月总收益 × 40% × 个人营业天数 ÷ 两人营业总天数</p>
+          <p class="formula-note" id="formula-note">每人收益 = 本月总收益 × 60% ÷ 2 ＋ 本月总收益 × 40% × 个人营业天数 ÷ 两人营业总天数</p>
         </section>
         </section>
 
         <section class="view" id="view-history">
           <section class="history-banner">
             <div class="head-icon yellow"><svg><use href="#i-clock"/></svg></div>
-            <div><span>HISTORY</span><h2>历史收益分配</h2><p>每次完成双月结算后，结果都会保存在这里。</p></div>
+            <div><span>HISTORY</span><h2>历史收益分配</h2><p>每次完成单月结算后，结果都会保存在这里。</p></div>
           </section>
           <section class="section-card history-card" id="history">
             <div class="year-summary-head">
-              <div><span>YEARLY SUMMARY</span><h3>年度收益汇总</h3><p>按双月结算周期的起始年份统计。</p></div>
+              <div><span>YEARLY SUMMARY</span><h3>年度收益汇总</h3><p>按每月结算记录所属年份统计。</p></div>
               <label><span>查看年份</span><select id="history-year"></select></label>
             </div>
             <div class="year-summary-grid">
@@ -216,10 +210,10 @@
               <article><span>全年出勤池</span><strong id="year-work-pool">¥0.00</strong><small>按营业天数分配</small></article>
             </div>
             <div class="history-toolbar">
-              <div><strong>双月结算记录</strong><small>最近保存 12 期，仅存储在当前浏览器</small></div>
+              <div><strong>单月结算记录</strong><small>最近保存 24 期，仅存储在当前浏览器</small></div>
               <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空记录</button>
             </div>
-            <div id="history-list" class="history-list"><p class="empty-history">完成第一次双月结算后，记录会出现在这里。</p></div>
+            <div id="history-list" class="history-list"><p class="empty-history">完成第一次单月结算后，记录会出现在这里。</p></div>
           </section>
         </section>
 
@@ -229,10 +223,10 @@
   </div>
 
   <nav class="mobile-nav">
-    <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>双月结算</button>
+    <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>单月结算</button>
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260818-5"></script>
+  <script src="app.js?v=20260821-1"></script>
 </body>
 </html>

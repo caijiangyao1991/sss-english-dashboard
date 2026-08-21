@@ -3,7 +3,7 @@ const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)]
 
 const form = $('#settlement-form');
 const startMonthInput = $('#start-month');
-const incomeInputs = ['#first-platform', '#first-wechat', '#second-platform', '#second-wechat', '#adjustment'].map(selector => $(selector));
+const incomeInputs = ['#first-platform', '#first-wechat', '#adjustment'].map(selector => $(selector));
 const caicaiDaysInput = $('#caicai-days');
 const xiaofanDaysInput = $('#xiaofan-days');
 const equalRateInput = $('#equal-rate');
@@ -63,12 +63,6 @@ function parseMonth(value) {
   return new Date(year, month - 1, 1);
 }
 
-function addMonths(value, count) {
-  const date = parseMonth(value);
-  date.setMonth(date.getMonth() + count);
-  return monthKey(date.getFullYear(), date.getMonth());
-}
-
 function monthLabel(value) {
   const [year, month] = value.split('-');
   return `${year}年${Number(month)}月`;
@@ -98,17 +92,16 @@ function getAvailableBusinessDays(value) {
 }
 
 function currentPeriod() {
-  const first = startMonthInput.value;
-  return { first, second: addMonths(first, 1), key: `${first}_${addMonths(first, 1)}` };
+  const month = startMonthInput.value;
+  return { month, key: month };
 }
 
 function updatePeriodUI() {
   if (!startMonthInput.value) return;
-  const { first, second } = currentPeriod();
-  $('#first-month-title').textContent = monthLabel(first);
-  $('#second-month-title').textContent = monthLabel(second);
-  $('#top-period').textContent = `${monthLabel(first)} — ${monthLabel(second)}`;
-  const totalAvailable = getAvailableBusinessDays(first) + getAvailableBusinessDays(second);
+  const { month } = currentPeriod();
+  $('#first-month-title').textContent = monthLabel(month);
+  $('#top-period').textContent = monthLabel(month);
+  const totalAvailable = getAvailableBusinessDays(month);
   $('#available-days').textContent = totalAvailable;
   caicaiDaysInput.max = totalAvailable;
   xiaofanDaysInput.max = totalAvailable;
@@ -127,10 +120,8 @@ function syncPartnerDays(changedInput, partnerInput) {
 
 function updateIncomePreview() {
   const firstSubtotal = roundMoney(numberValue($('#first-platform')) + numberValue($('#first-wechat')));
-  const secondSubtotal = roundMoney(numberValue($('#second-platform')) + numberValue($('#second-wechat')));
-  const total = roundMoney(firstSubtotal + secondSubtotal + numberValue($('#adjustment')));
+  const total = roundMoney(firstSubtotal + numberValue($('#adjustment')));
   $('#first-subtotal').textContent = formatMoney(firstSubtotal);
-  $('#second-subtotal').textContent = formatMoney(secondSubtotal);
   $('#income-preview').textContent = formatMoney(total);
 }
 
@@ -163,8 +154,8 @@ function renderMonthCalendar(value) {
 }
 
 function renderCalendars() {
-  const { first, second } = currentPeriod();
-  $('#calendar-pair').innerHTML = renderMonthCalendar(first) + renderMonthCalendar(second);
+  const { month } = currentPeriod();
+  $('#calendar-pair').innerHTML = renderMonthCalendar(month);
   updateDateCounts();
 }
 
@@ -216,7 +207,7 @@ function switchView(viewName) {
   $$('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === viewName));
   $('#page-greeting').innerHTML = viewName === 'history'
     ? '看看以前每一期是怎么分配的 <span>☀</span>'
-    : '嗨，来完成这期双月结算吧 <span>☀</span>';
+    : '嗨，来完成本月结算吧 <span>☀</span>';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -229,12 +220,12 @@ function showToast(title, message) {
 }
 
 function validate(total, counts) {
-  if (total <= 0) return '请填写大于 0 元的双月可分配收益。';
+  if (total <= 0) return '请填写大于 0 元的本月可分配收益。';
   if (counts.caicai + counts.xiaofan <= 0) return '请至少填写一人的营业天数。';
   if (!readAllocation()) return '公共池和出勤池比例合计必须为 100%。';
   if (attendanceMode === 'days') {
-    const { first, second } = currentPeriod();
-    const maximum = getAvailableBusinessDays(first) + getAvailableBusinessDays(second);
+    const { month } = currentPeriod();
+    const maximum = getAvailableBusinessDays(month);
     if (!Number.isInteger(counts.caicai) || !Number.isInteger(counts.xiaofan)) return '营业天数需要填写整数。';
     if (counts.caicai < 0 || counts.xiaofan < 0) return '营业天数不能小于 0。';
     if (counts.caicai > maximum || counts.xiaofan > maximum) return `本期每人最多有 ${maximum} 个可营业日，请检查天数。`;
@@ -258,9 +249,9 @@ function calculateSettlement(event) {
   const xiaofanTotal = roundMoney(total - caicaiTotal);
   const caicaiWork = roundMoney(caicaiTotal - equalShare);
   const xiaofanWork = roundMoney(xiaofanTotal - equalShare);
-  const { first, second, key } = currentPeriod();
+  const { month, key } = currentPeriod();
   const result = {
-    id: Date.now(), periodKey: key, first, second, total,
+    id: Date.now(), periodKey: key, month, total,
     equalShare, equalPool: roundMoney(equalShare * 2), workPool: roundMoney(caicaiWork + xiaofanWork),
     caicaiDays: counts.caicai, xiaofanDays: counts.xiaofan,
     equalRate: allocation.equal, workRate: allocation.work,
@@ -274,7 +265,7 @@ function calculateSettlement(event) {
 }
 
 function displayResult(result) {
-  $('#result-period').textContent = `${monthLabel(result.first)} — ${monthLabel(result.second)} 结算结果`;
+  $('#result-period').textContent = `${monthLabel(result.month)} 结算结果`;
   $('#caicai-total').textContent = formatMoney(result.caicaiTotal);
   $('#xiaofan-total').textContent = formatMoney(result.xiaofanTotal);
   $('#caicai-equal').textContent = formatMoney(result.equalShare);
@@ -288,33 +279,33 @@ function displayResult(result) {
   $('#summary-work-pool').textContent = formatMoney(result.workPool);
   $('#summary-equal-label').textContent = `${result.equalRate}% 公共池`;
   $('#summary-work-label').textContent = `${result.workRate}% 出勤池`;
-  $('#formula-note').textContent = `每人收益 = 双月总收益 × ${result.equalRate}% ÷ 2 ＋ 双月总收益 × ${result.workRate}% × 个人营业天数 ÷ 两人营业总天数`;
+  $('#formula-note').textContent = `每人收益 = 本月总收益 × ${result.equalRate}% ÷ 2 ＋ 本月总收益 × ${result.workRate}% × 个人营业天数 ÷ 两人营业总天数`;
   const days = result.caicaiDays + result.xiaofanDays;
   $('#summary-ratio').textContent = `菜菜 ${(result.caicaiDays / days * 100).toFixed(1)}% · 小凡 ${(result.xiaofanDays / days * 100).toFixed(1)}%`;
   resultSection.hidden = false;
 }
 
 function getHistory() {
-  try { return JSON.parse(localStorage.getItem('kuaTuanBimonthlyHistory')) || []; } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('kuaTuanMonthlyHistory')) || []; } catch { return []; }
 }
 
 function saveHistory(result) {
   const history = getHistory().filter(item => item.periodKey !== result.periodKey);
   history.unshift(result);
-  localStorage.setItem('kuaTuanBimonthlyHistory', JSON.stringify(history.slice(0, 12)));
+  localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(history.slice(0, 24)));
   renderHistory();
 }
 
 function renderYearSummary(history) {
   const selectedYear = historyYearSelect.value;
-  const years = [...new Set(history.map(item => Number(String(item.first).slice(0, 4))).filter(Boolean))].sort((a, b) => b - a);
+  const years = [...new Set(history.map(item => Number(String(item.month).slice(0, 4))).filter(Boolean))].sort((a, b) => b - a);
   const fallbackYear = new Date().getFullYear();
   const availableYears = years.length ? years : [fallbackYear];
   historyYearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year} 年</option>`).join('');
   historyYearSelect.value = availableYears.includes(Number(selectedYear)) ? selectedYear : String(availableYears[0]);
 
   const year = Number(historyYearSelect.value);
-  const yearlyHistory = history.filter(item => Number(String(item.first).slice(0, 4)) === year);
+  const yearlyHistory = history.filter(item => Number(String(item.month).slice(0, 4)) === year);
   const totals = yearlyHistory.reduce((summary, item) => ({
     total: summary.total + Number(item.total || 0),
     caicai: summary.caicai + Number(item.caicaiTotal || 0),
@@ -339,10 +330,10 @@ function renderHistory() {
   const history = getHistory();
   renderYearSummary(history);
   if (!history.length) {
-    historyList.innerHTML = '<p class="empty-history">完成第一次双月结算后，记录会出现在这里。</p>';
+    historyList.innerHTML = '<p class="empty-history">完成第一次单月结算后，记录会出现在这里。</p>';
     return;
   }
-  historyList.innerHTML = history.map(item => `<article class="history-item"><div><strong>${monthLabel(item.first)} — ${monthLabel(item.second)}</strong><small>总收益 ${formatMoney(item.total)} · 菜菜 ${item.caicaiDays} 天 / 小凡 ${item.xiaofanDays} 天</small></div><div class="history-amount"><span>菜菜</span><b>${formatMoney(item.caicaiTotal)}</b></div><div class="history-amount"><span>小凡</span><b>${formatMoney(item.xiaofanTotal)}</b></div><button type="button" class="delete-history" data-history-id="${item.id}" aria-label="删除记录">×</button></article>`).join('');
+  historyList.innerHTML = history.map(item => `<article class="history-item"><div><strong>${monthLabel(item.month)}</strong><small>总收益 ${formatMoney(item.total)} · 菜菜 ${item.caicaiDays} 天 / 小凡 ${item.xiaofanDays} 天</small></div><div class="history-amount"><span>菜菜</span><b>${formatMoney(item.caicaiTotal)}</b></div><div class="history-amount"><span>小凡</span><b>${formatMoney(item.xiaofanTotal)}</b></div><button type="button" class="delete-history" data-history-id="${item.id}" aria-label="删除记录">×</button></article>`).join('');
 }
 
 function resetForm() {
@@ -380,9 +371,9 @@ $('#toggle-rest-mode').addEventListener('click', () => { restMode = !restMode; u
 $('#clear-dates').addEventListener('click', () => { selectedDates = {}; restDates = {}; updatePeriodUI(); renderCalendars(); });
 $('#reset-button').addEventListener('click', resetForm);
 $('#print-button').addEventListener('click', () => window.print());
-$('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部双月结算记录吗？')) { localStorage.removeItem('kuaTuanBimonthlyHistory'); renderHistory(); } });
+$('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部单月结算记录吗？')) { localStorage.removeItem('kuaTuanMonthlyHistory'); renderHistory(); } });
 historyYearSelect.addEventListener('change', () => renderYearSummary(getHistory()));
-historyList.addEventListener('click', event => { const button = event.target.closest('[data-history-id]'); if (!button) return; const next = getHistory().filter(item => String(item.id) !== button.dataset.historyId); localStorage.setItem('kuaTuanBimonthlyHistory', JSON.stringify(next)); renderHistory(); });
+historyList.addEventListener('click', event => { const button = event.target.closest('[data-history-id]'); if (!button) return; const next = getHistory().filter(item => String(item.id) !== button.dataset.historyId); localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(next)); renderHistory(); });
 form.addEventListener('submit', calculateSettlement);
 
 startMonthInput.value = defaultStartMonth();
