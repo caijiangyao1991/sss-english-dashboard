@@ -33,8 +33,8 @@
       </a>
 
       <nav class="main-nav" aria-label="主要页面">
-        <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>单月收益结算</span></button>
-        <button class="nav-item" type="button" data-view="dushutong"><svg><use href="#i-box"/></svg><span>读书瞳进销存</span></button>
+        <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>快团收益计算</span></button>
+        <button class="nav-item" type="button" data-view="dushutong"><svg><use href="#i-box"/></svg><span>读书瞳收益结算</span></button>
         <button class="nav-item" type="button" data-view="history"><svg><use href="#i-clock"/></svg><span>历史收益分配</span></button>
       </nav>
 
@@ -205,17 +205,17 @@
               <label><span>查看年份</span><select id="history-year"></select></label>
             </div>
             <div class="year-summary-grid">
-              <article class="year-summary-total"><span>全年总收益</span><strong id="year-total">¥0.00</strong><small id="year-periods">已结算 0 期</small></article>
+              <article class="year-summary-total"><span>全年总收益</span><strong id="year-total">¥0.00</strong><small id="year-periods">快团 0 期 · 读书瞳 0 笔</small></article>
               <article><span>菜菜全年所得</span><strong id="year-caicai">¥0.00</strong><small id="year-caicai-days">营业 0 天</small></article>
               <article><span>小凡全年所得</span><strong id="year-xiaofan">¥0.00</strong><small id="year-xiaofan-days">营业 0 天</small></article>
-              <article><span>全年公共池</span><strong id="year-equal-pool">¥0.00</strong><small>两人平分部分</small></article>
-              <article><span>全年出勤池</span><strong id="year-work-pool">¥0.00</strong><small>按营业天数分配</small></article>
+              <article><span>快团全年公共池</span><strong id="year-equal-pool">¥0.00</strong><small>仅统计快团月结</small></article>
+              <article><span>快团全年出勤池</span><strong id="year-work-pool">¥0.00</strong><small>仅统计快团月结</small></article>
             </div>
             <div class="history-toolbar">
-              <div><strong>单月结算记录</strong><small>最近保存 24 期，仅存储在当前浏览器</small></div>
-              <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空记录</button>
+              <div><strong>全部收益分配记录</strong><small>快团月结与读书瞳销售统一展示，仅存储在当前浏览器</small></div>
+              <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空快团记录</button>
             </div>
-            <div id="history-list" class="history-list"><p class="empty-history">完成第一次单月结算后，记录会出现在这里。</p></div>
+            <div id="history-list" class="history-list"><p class="empty-history">完成快团月结或读书瞳销售后，记录会出现在这里。</p></div>
           </section>
         </section>
 
@@ -303,8 +303,8 @@
   </div>
 
   <nav class="mobile-nav">
-    <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>单月结算</button>
-    <button type="button" data-view="dushutong"><svg><use href="#i-box"/></svg>读书瞳</button>
+    <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>快团收益</button>
+    <button type="button" data-view="dushutong"><svg><use href="#i-box"/></svg>读书瞳收益</button>
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>

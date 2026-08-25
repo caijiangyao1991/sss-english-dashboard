@@ -215,6 +215,7 @@ function switchView(viewName) {
   $('#page-greeting').innerHTML = greetings[viewName] || greetings.settlement;
   $('#period-jump').hidden = viewName === 'dushutong';
   if (viewName === 'dushutong') renderDushutong();
+  if (viewName === 'history') renderHistory();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -401,6 +402,7 @@ function addDushutongSale(event) {
   $('#dst-sale-freight').value = 0;
   $('#dst-sale-seller').value = sale.seller;
   renderDushutong();
+  renderHistory();
   showToast('销售已保存', `菜菜本次应收 ${formatMoney(sale.caicaiReceivable)}，小凡本次应收 ${formatMoney(sale.xiaofanReceivable)}。`);
 }
 
@@ -409,6 +411,7 @@ function deleteDushutongSale(id) {
   const sales = getStoredList(DUSHUTONG_SALES_KEY).filter(item => String(item.id) !== String(id));
   saveStoredList(DUSHUTONG_SALES_KEY, sales);
   renderDushutong();
+  renderHistory();
 }
 
 function deleteDushutongPurchase(id) {
@@ -507,8 +510,12 @@ function saveHistory(result) {
 }
 
 function renderYearSummary(history) {
+  const dushutongSales = getStoredList(DUSHUTONG_SALES_KEY);
   const selectedYear = historyYearSelect.value;
-  const years = [...new Set(history.map(item => Number(String(item.month).slice(0, 4))).filter(Boolean))].sort((a, b) => b - a);
+  const years = [...new Set([
+    ...history.map(item => Number(String(item.month).slice(0, 4))),
+    ...dushutongSales.map(item => Number(String(item.date).slice(0, 4))),
+  ].filter(Boolean))].sort((a, b) => b - a);
   const fallbackYear = new Date().getFullYear();
   const availableYears = years.length ? years : [fallbackYear];
   historyYearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year} 年</option>`).join('');
@@ -516,6 +523,7 @@ function renderYearSummary(history) {
 
   const year = Number(historyYearSelect.value);
   const yearlyHistory = history.filter(item => Number(String(item.month).slice(0, 4)) === year);
+  const yearlyDushutongSales = dushutongSales.filter(item => Number(String(item.date).slice(0, 4)) === year);
   const totals = yearlyHistory.reduce((summary, item) => ({
     total: summary.total + Number(item.total || 0),
     caicai: summary.caicai + Number(item.caicaiTotal || 0),
@@ -525,25 +533,33 @@ function renderYearSummary(history) {
     caicaiDays: summary.caicaiDays + Number(item.caicaiDays || 0),
     xiaofanDays: summary.xiaofanDays + Number(item.xiaofanDays || 0),
   }), { total: 0, caicai: 0, xiaofan: 0, equalPool: 0, workPool: 0, caicaiDays: 0, xiaofanDays: 0 });
+  const dushutongTotals = yearlyDushutongSales.reduce((summary, item) => ({
+    total: summary.total + Number(item.profit || 0),
+    caicai: summary.caicai + Number(item.caicaiProfit || 0),
+    xiaofan: summary.xiaofan + Number(item.xiaofanProfit || 0),
+  }), { total: 0, caicai: 0, xiaofan: 0 });
 
-  $('#year-total').textContent = formatMoney(totals.total);
-  $('#year-caicai').textContent = formatMoney(totals.caicai);
-  $('#year-xiaofan').textContent = formatMoney(totals.xiaofan);
+  $('#year-total').textContent = formatMoney(totals.total + dushutongTotals.total);
+  $('#year-caicai').textContent = formatMoney(totals.caicai + dushutongTotals.caicai);
+  $('#year-xiaofan').textContent = formatMoney(totals.xiaofan + dushutongTotals.xiaofan);
   $('#year-equal-pool').textContent = formatMoney(totals.equalPool);
   $('#year-work-pool').textContent = formatMoney(totals.workPool);
-  $('#year-periods').textContent = `已结算 ${yearlyHistory.length} 期`;
-  $('#year-caicai-days').textContent = `营业 ${totals.caicaiDays} 天`;
-  $('#year-xiaofan-days').textContent = `营业 ${totals.xiaofanDays} 天`;
+  $('#year-periods').textContent = `快团 ${yearlyHistory.length} 期 · 读书瞳 ${yearlyDushutongSales.length} 笔`;
+  $('#year-caicai-days').textContent = `快团营业 ${totals.caicaiDays} 天 · 读书瞳 ${yearlyDushutongSales.length} 笔`;
+  $('#year-xiaofan-days').textContent = `快团营业 ${totals.xiaofanDays} 天 · 读书瞳 ${yearlyDushutongSales.length} 笔`;
 }
 
 function renderHistory() {
   const history = getHistory();
+  const dushutongSales = getStoredList(DUSHUTONG_SALES_KEY);
   renderYearSummary(history);
-  if (!history.length) {
-    historyList.innerHTML = '<p class="empty-history">完成第一次单月结算后，记录会出现在这里。</p>';
+  if (!history.length && !dushutongSales.length) {
+    historyList.innerHTML = '<p class="empty-history">完成快团月结或读书瞳销售后，记录会出现在这里。</p>';
     return;
   }
-  historyList.innerHTML = history.map(item => `<article class="history-item"><div><strong>${monthLabel(item.month)}</strong><small>总收益 ${formatMoney(item.total)} · 菜菜 ${item.caicaiDays} 天 / 小凡 ${item.xiaofanDays} 天</small></div><div class="history-amount"><span>菜菜</span><b>${formatMoney(item.caicaiTotal)}</b></div><div class="history-amount"><span>小凡</span><b>${formatMoney(item.xiaofanTotal)}</b></div><button type="button" class="delete-history" data-history-id="${item.id}" aria-label="删除记录">×</button></article>`).join('');
+  const monthlyItems = history.map(item => ({ sortDate: `${item.month}-31`, html: `<article class="history-item"><div><strong><i class="history-kind kua-tuan">快团</i>${monthLabel(item.month)}</strong><small>总收益 ${formatMoney(item.total)} · 菜菜 ${item.caicaiDays} 天 / 小凡 ${item.xiaofanDays} 天</small></div><div class="history-amount"><span>菜菜</span><b>${formatMoney(item.caicaiTotal)}</b></div><div class="history-amount"><span>小凡</span><b>${formatMoney(item.xiaofanTotal)}</b></div><button type="button" class="delete-history" data-history-id="${item.id}" aria-label="删除快团记录">×</button></article>` }));
+  const dushutongItems = dushutongSales.map(item => ({ sortDate: item.date, html: `<article class="history-item"><div><strong><i class="history-kind dushutong">读书瞳</i>${formatDushutongDate(item.date)}</strong><small>${ownerName(item.seller)}卖出 ${item.quantity} 台 · 销售额 ${formatMoney(item.revenue)} · 净利润 ${formatMoney(item.profit)}</small></div><div class="history-amount"><span>菜菜利润</span><b>${formatMoney(item.caicaiProfit)}</b></div><div class="history-amount"><span>小凡利润</span><b>${formatMoney(item.xiaofanProfit)}</b></div><button type="button" class="delete-history" data-dst-history-sale-id="${item.id}" aria-label="删除读书瞳记录">×</button></article>` }));
+  historyList.innerHTML = [...monthlyItems, ...dushutongItems].sort((a, b) => b.sortDate.localeCompare(a.sortDate)).map(item => item.html).join('');
 }
 
 function resetForm() {
@@ -581,9 +597,19 @@ $('#toggle-rest-mode').addEventListener('click', () => { restMode = !restMode; u
 $('#clear-dates').addEventListener('click', () => { selectedDates = {}; restDates = {}; updatePeriodUI(); renderCalendars(); });
 $('#reset-button').addEventListener('click', resetForm);
 $('#print-button').addEventListener('click', () => window.print());
-$('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部单月结算记录吗？')) { localStorage.removeItem('kuaTuanMonthlyHistory'); renderHistory(); } });
+$('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部快团月结记录吗？读书瞳记录不会被删除。')) { localStorage.removeItem('kuaTuanMonthlyHistory'); renderHistory(); } });
 historyYearSelect.addEventListener('change', () => renderYearSummary(getHistory()));
-historyList.addEventListener('click', event => { const button = event.target.closest('[data-history-id]'); if (!button) return; const next = getHistory().filter(item => String(item.id) !== button.dataset.historyId); localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(next)); renderHistory(); });
+historyList.addEventListener('click', event => {
+  const monthlyButton = event.target.closest('[data-history-id]');
+  if (monthlyButton) {
+    const next = getHistory().filter(item => String(item.id) !== monthlyButton.dataset.historyId);
+    localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(next));
+    renderHistory();
+    return;
+  }
+  const dushutongButton = event.target.closest('[data-dst-history-sale-id]');
+  if (dushutongButton) deleteDushutongSale(dushutongButton.dataset.dstHistorySaleId);
+});
 form.addEventListener('submit', calculateSettlement);
 dstPurchaseForm.addEventListener('submit', addDushutongPurchase);
 dstSaleForm.addEventListener('submit', addDushutongSale);
