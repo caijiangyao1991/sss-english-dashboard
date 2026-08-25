@@ -23,6 +23,7 @@
     <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14"/></symbol>
     <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="m12 2 1.5 5.1L18 9l-4.5 1.9L12 16l-1.5-5.1L6 9l4.5-1.9Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></symbol>
     <symbol id="i-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4-8 4Z"/><path d="m4 7 8 4 8-4v10l-8 4-8-4Z"/><path d="M12 11v10"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
   </svg>
 
   <div class="app-shell">
@@ -36,6 +37,7 @@
         <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>快团收益计算</span></button>
         <button class="nav-item" type="button" data-view="dushutong"><svg><use href="#i-box"/></svg><span>读书瞳收益结算</span></button>
         <button class="nav-item" type="button" data-view="history"><svg><use href="#i-clock"/></svg><span>历史收益分配</span></button>
+        <a class="nav-item" href="../wechat-group-monitor/"><svg><use href="#i-users"/></svg><span>微信群退群侦测</span></a>
       </nav>
 
       <div class="sidebar-rule">
@@ -306,6 +308,7 @@
     <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>快团收益</button>
     <button type="button" data-view="dushutong"><svg><use href="#i-box"/></svg>读书瞳收益</button>
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
+    <a href="../wechat-group-monitor/"><svg><use href="#i-users"/></svg>退群侦测</a>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
   <script src="app.js?v=20260825-1"></script>

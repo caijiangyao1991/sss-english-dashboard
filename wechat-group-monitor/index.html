@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4fbf7">
+  <meta name="description" content="微信群成员快照对比、退群识别与客户跟进工具">
+  <title>微信群退群侦测｜社群客户管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260825-1">
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10M7 9h7M7 15h8"/></symbol>
+    <symbol id="i-log" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="../kua-tuan-settlement/">
+        <span class="brand-mark">群</span>
+        <span><strong>社群客户雷达</strong><small>微信群退群侦测</small></span>
+      </a>
+
+      <nav class="main-nav" aria-label="页面导航">
+        <button class="nav-item active" type="button" data-view="dashboard"><svg><use href="#i-users"/></svg><span>群成员概览</span></button>
+        <button class="nav-item" type="button" data-view="snapshot"><svg><use href="#i-scan"/></svg><span>上传最新快照</span></button>
+        <button class="nav-item" type="button" data-view="history"><svg><use href="#i-log"/></svg><span>退群客户记录</span></button>
+      </nav>
+
+      <section class="group-panel">
+        <div class="group-panel-head"><strong>我的微信群</strong><button id="add-group-button" type="button" aria-label="新增微信群"><svg><use href="#i-plus"/></svg></button></div>
+        <div id="group-list" class="group-list"></div>
+      </section>
+
+      <div class="privacy-card"><strong>🔒 本地隐私模式</strong><p>成员名单和历史只保存在当前浏览器，不上传截图或客户资料。</p></div>
+      <a class="back-link" href="../kua-tuan-settlement/"><svg><use href="#i-back"/></svg>返回双人小账本</a>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div><small id="today-text"></small><h1 id="page-title">群成员变化，一眼就知道</h1></div>
+        <div class="mobile-group-picker"><svg><use href="#i-users"/></svg><select id="mobile-group-select" aria-label="切换微信群"></select><button id="mobile-add-group" type="button" aria-label="新增微信群">＋</button></div>
+      </header>
+
+      <div class="workspace">
+        <section class="view active" id="view-dashboard">
+          <section class="hero-card">
+            <div><span>WECHAT COMMUNITY CARE</span><h2 id="hero-group-name">先创建一个微信群</h2><p>定期保存成员快照，系统会自动对比谁退出、谁新加入。</p></div>
+            <button class="hero-action" type="button" data-go="snapshot"><svg><use href="#i-scan"/></svg><span>录入最新名单</span></button>
+          </section>
+
+          <section class="summary-grid">
+            <article><span>当前成员</span><strong id="summary-members">0</strong><small>最近一次快照</small></article>
+            <article class="danger"><span>累计退群</span><strong id="summary-left">0</strong><small>需要重点关注</small></article>
+            <article class="success"><span>累计新进群</span><strong id="summary-joined">0</strong><small>快照对比结果</small></article>
+            <article><span>已保存快照</span><strong id="summary-snapshots">0</strong><small id="summary-last-time">尚未建立基线</small></article>
+          </section>
+
+          <div class="dashboard-grid">
+            <section class="card">
+              <div class="card-head"><div><span>LATEST CHANGES</span><h3>最近成员变化</h3><p>显示最近一次名单对比的结果。</p></div><button class="soft-button" type="button" data-go="history">查看全部</button></div>
+              <div id="latest-changes" class="change-list"></div>
+            </section>
+            <section class="card guide-card">
+              <div class="card-head"><div><span>HOW IT WORKS</span><h3>三步发现退群客户</h3></div></div>
+              <ol><li><b>①</b><span><strong>建立首次基线</strong><small>上传群成员截图，或每行粘贴一个昵称。</small></span></li><li><b>②</b><span><strong>定期更新名单</strong><small>建议每天或活动结束后保存一次快照。</small></span></li><li><b>③</b><span><strong>查看退出名单</strong><small>系统对比前后名单，并保存客户跟进记录。</small></span></li></ol>
+              <p class="accuracy-note">昵称变更会被识别为“一人退出＋一人加入”；截图识别后请先人工核对名单。</p>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="view-snapshot">
+          <section class="page-banner"><div><span>MEMBER SNAPSHOT</span><h2>上传最新群成员名单</h2><p id="snapshot-subtitle">先选择一个微信群，再建立成员基线。</p></div></section>
+          <section class="card snapshot-card">
+            <div class="snapshot-meta">
+              <label><span>快照时间</span><input id="snapshot-time" type="datetime-local"></label>
+              <label><span>本次备注</span><input id="snapshot-note" type="text" maxlength="60" placeholder="例如：直播结束后检查"></label>
+            </div>
+
+            <div class="import-tabs"><button class="active" type="button" data-import="paste">粘贴成员名单</button><button type="button" data-import="ocr">上传截图识别</button></div>
+            <div class="import-panel active" id="import-paste">
+              <label class="member-textarea"><span>每行填写一个微信群昵称</span><textarea id="member-input" placeholder="张三妈妈&#10;小糍粑妈妈&#10;王老师"></textarea></label>
+              <div class="paste-tools"><button id="clean-list" class="soft-button" type="button">整理并去除空行</button><small id="member-count-text">当前识别 0 个名字</small></div>
+            </div>
+            <div class="import-panel" id="import-ocr">
+              <label class="upload-zone" id="upload-zone"><input id="screenshot-input" type="file" accept="image/*" multiple><svg><use href="#i-upload"/></svg><strong>上传微信群成员列表截图</strong><span>支持多张截图；建议裁剪掉聊天内容，只保留头像下方的昵称区域。</span><em id="file-count">尚未选择截图</em></label>
+              <button id="run-ocr" class="ocr-button" type="button" disabled><svg><use href="#i-scan"/></svg><span>开始本地识别昵称</span></button>
+              <div id="ocr-progress" class="ocr-progress" hidden><div><span></span></div><p>正在准备识别…</p></div>
+              <p class="ocr-tip">首次识别需要联网下载中文识别模型，但截图本身不会上传。识别结果会放入名单文本框，请务必人工删除“群聊名称、完成”等界面文字。</p>
+            </div>
+
+            <section class="compare-preview">
+              <div class="compare-head"><div><span>COMPARE PREVIEW</span><h3>保存前预览</h3></div><small id="compare-baseline">首次保存将作为基线，不产生退群记录。</small></div>
+              <div class="compare-grid">
+                <article><span>本次成员</span><strong id="preview-current">0</strong></article>
+                <article class="left"><span>预计退群</span><strong id="preview-left">0</strong><small id="preview-left-names">—</small></article>
+                <article class="joined"><span>预计新进</span><strong id="preview-joined">0</strong><small id="preview-joined-names">—</small></article>
+              </div>
+            </section>
+
+            <div class="save-bar"><div><strong>保存后会成为新的对比基线</strong><small>原始截图不会保存，仅保存你确认后的昵称名单。</small></div><button id="save-snapshot" class="primary-button" type="button"><svg><use href="#i-check"/></svg>确认并保存快照</button></div>
+          </section>
+        </section>
+
+        <section class="view" id="view-history">
+          <section class="page-banner history-banner"><div><span>LEAVING HISTORY</span><h2>退群客户跟进记录</h2><p>记录客户何时从哪个群消失，并补充跟进状态和备注。</p></div><button id="export-history" class="soft-button" type="button"><svg><use href="#i-download"/></svg>导出 CSV</button></section>
+          <section class="card filters-card">
+            <div class="filters"><label><span>微信群</span><select id="history-group-filter"></select></label><label><span>跟进状态</span><select id="history-status-filter"><option value="all">全部状态</option><option value="pending">待联系</option><option value="contacted">已联系</option></select></label><label class="search-label"><span>搜索客户</span><input id="history-search" type="search" placeholder="输入昵称或备注"></label></div>
+          </section>
+          <section id="exit-history" class="exit-history"></section>
+        </section>
+
+        <footer>微信群退群侦测 · 普通微信辅助工具 · 不使用外挂，不读取微信数据库</footer>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav"><button class="active" type="button" data-view="dashboard"><svg><use href="#i-users"/></svg>概览</button><button type="button" data-view="snapshot"><svg><use href="#i-scan"/></svg>新快照</button><button type="button" data-view="history"><svg><use href="#i-log"/></svg>退群记录</button></nav>
+
+  <dialog id="group-dialog">
+    <form id="group-form" method="dialog">
+      <div class="dialog-head"><div><span>NEW GROUP</span><h2>新增微信群</h2></div><button id="close-group-dialog" type="button">×</button></div>
+      <label><span>微信群名称</span><input id="group-name-input" type="text" maxlength="40" required placeholder="例如：英语启蒙 1 群"></label>
+      <label><span>群用途 / 备注</span><input id="group-note-input" type="text" maxlength="60" placeholder="例如：7 月体验营客户"></label>
+      <button class="primary-button" type="submit">创建微信群</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app.js?v=20260825-1"></script>
+</body>
+</html>
