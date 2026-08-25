@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#fffaf2">
-  <meta name="description" content="菜菜和小凡的单月收益结算工作台">
-  <title>菜菜 & 小凡｜单月收益结算工作台</title>
+  <meta name="description" content="菜菜和小凡的收益结算、读书瞳进销存与利润分配工作台">
+  <title>菜菜 & 小凡｜经营结算工作台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260821-1">
+  <link rel="stylesheet" href="styles.css?v=20260825-1">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -22,17 +22,19 @@
     <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/></symbol>
     <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14"/></symbol>
     <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="m12 2 1.5 5.1L18 9l-4.5 1.9L12 16l-1.5-5.1L6 9l4.5-1.9Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4-8 4Z"/><path d="m4 7 8 4 8-4v10l-8 4-8-4Z"/><path d="M12 11v10"/></symbol>
   </svg>
 
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="#top">
         <span class="brand-mark">¥</span>
-        <span><strong>双人小账本</strong><small>菜菜 & 小凡 · 单月结算</small></span>
+        <span><strong>双人小账本</strong><small>菜菜 & 小凡 · 经营结算</small></span>
       </a>
 
       <nav class="main-nav" aria-label="主要页面">
         <button class="nav-item active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg><span>单月收益结算</span></button>
+        <button class="nav-item" type="button" data-view="dushutong"><svg><use href="#i-box"/></svg><span>读书瞳进销存</span></button>
         <button class="nav-item" type="button" data-view="history"><svg><use href="#i-clock"/></svg><span>历史收益分配</span></button>
       </nav>
 
@@ -217,6 +219,84 @@
           </section>
         </section>
 
+        <section class="view" id="view-dushutong">
+          <section class="dst-hero">
+            <div>
+              <span class="eyebrow">DUSHUTONG LEDGER</span>
+              <h2>读书瞳进销存与利润分配</h2>
+              <p>每次进货、卖出和运费都单独记录，库存与菜菜、小凡应分金额自动更新。</p>
+            </div>
+            <div class="dst-hero-badge"><svg><use href="#i-box"/></svg><strong id="dst-hero-stock">0 台</strong><small>当前可售库存</small></div>
+          </section>
+
+          <section class="dst-summary-grid" aria-label="读书瞳经营概览">
+            <article><span>当前库存</span><strong id="dst-stock-count">0 台</strong><small id="dst-stock-flow">累计进货 0 · 已售 0</small></article>
+            <article><span>库存平均成本</span><strong id="dst-average-cost">¥0.00</strong><small id="dst-stock-value">库存货值 ¥0.00</small></article>
+            <article><span>累计销售额</span><strong id="dst-revenue-total">¥0.00</strong><small id="dst-sales-count">共 0 笔销售</small></article>
+            <article class="profit"><span>累计净利润</span><strong id="dst-profit-total">¥0.00</strong><small>销售额－货品成本－发货运费</small></article>
+            <article><span>菜菜累计分得利润</span><strong id="dst-caicai-profit">¥0.00</strong><small>已扣本人承担的一半运费</small></article>
+            <article><span>小凡累计分得利润</span><strong id="dst-xiaofan-profit">¥0.00</strong><small>已扣本人承担的一半运费</small></article>
+          </section>
+
+          <section class="section-card dst-settings-card">
+            <div class="dst-section-head">
+              <div><span>PROFIT RULE</span><h3>读书瞳分润约定</h3><p>谁卖出去谁多拿，双方共同承担货品成本和快递费。</p></div>
+              <strong>固定规则</strong>
+            </div>
+            <div class="dst-settings-grid">
+              <article class="dst-rule-item"><span>卖货的人</span><strong>利润 60%</strong><small>负责成交的人多拿两成</small></article>
+              <article class="dst-rule-item"><span>另一个人</span><strong>利润 40%</strong><small>共同合作，共享利润</small></article>
+              <article class="dst-rule-item"><span>进货成本</span><strong>各承担 50%</strong><small>每台成本双方平摊</small></article>
+              <article class="dst-rule-item"><span>发货运费</span><strong>各承担 50%</strong><small>最后一人补一分钱误差</small></article>
+            </div>
+            <p class="dst-rule-note">卖货人应收 = 一半货品成本 ＋（销售额－货品成本）× 60% － 一半发货运费；另一个人按 40% 计算。系统按分精确结算，并自动处理四舍五入产生的 1 分钱差额。</p>
+          </section>
+
+          <div class="dst-entry-grid">
+            <section class="section-card">
+              <div class="dst-section-head compact"><div><span>STOCK IN</span><h3>新增进货</h3><p>进货运费会摊入每台平均成本。</p></div></div>
+              <form id="dst-purchase-form" class="dst-form">
+                <label><span>进货日期</span><input id="dst-purchase-date" type="date" required></label>
+                <label><span>进货数量</span><div class="dst-input-unit"><input id="dst-purchase-quantity" type="number" min="1" step="1" required><b>台</b></div></label>
+                <label><span>每台进价</span><div class="dst-input-unit"><b>¥</b><input id="dst-purchase-unit-cost" type="number" min="0" step="0.01" required></div></label>
+                <label><span>本批进货运费</span><div class="dst-input-unit"><b>¥</b><input id="dst-purchase-freight" type="number" min="0" step="0.01" value="0"></div></label>
+                <label class="wide"><span>备注</span><input id="dst-purchase-note" type="text" maxlength="60" placeholder="例如：首批 10 台"></label>
+                <button class="primary-button wide" type="submit"><svg><use href="#i-check"/></svg>保存进货记录</button>
+              </form>
+            </section>
+
+            <section class="section-card dst-sale-card">
+              <div class="dst-section-head compact"><div><span>STOCK OUT</span><h3>记录本次卖出</h3><p>输入售价和实际运费，立即生成两人的本次分配。</p></div></div>
+              <form id="dst-sale-form" class="dst-form">
+                <label><span>销售日期</span><input id="dst-sale-date" type="date" required></label>
+                <label><span>卖出数量</span><div class="dst-input-unit"><input id="dst-sale-quantity" type="number" min="1" step="1" value="1" required><b>台</b></div></label>
+                <label><span>每台售价</span><div class="dst-input-unit"><b>¥</b><input id="dst-sale-unit-price" type="number" min="0" step="0.01" value="198" required></div></label>
+                <label><span>本次发货运费</span><div class="dst-input-unit"><b>¥</b><input id="dst-sale-freight" type="number" min="0" step="0.01" value="0"></div></label>
+                <label class="wide"><span>这次是谁卖出去的</span><select id="dst-sale-seller"><option value="caicai">菜菜卖出</option><option value="xiaofan">小凡卖出</option></select></label>
+                <label class="wide"><span>备注</span><input id="dst-sale-note" type="text" maxlength="60" placeholder="例如：某某家长 / 微信成交"></label>
+                <div class="dst-sale-preview wide">
+                  <div><span>销售额</span><strong id="dst-preview-revenue">¥0.00</strong></div>
+                  <div><span>货品成本</span><strong id="dst-preview-cost">¥0.00</strong></div>
+                  <div><span>扣运费后净利润</span><strong id="dst-preview-profit">¥0.00</strong></div>
+                  <div class="caicai"><span>菜菜本次应收</span><strong id="dst-preview-caicai">¥0.00</strong><small id="dst-preview-caicai-detail">利润 ¥0.00</small></div>
+                  <div class="xiaofan"><span>小凡本次应收</span><strong id="dst-preview-xiaofan">¥0.00</strong><small id="dst-preview-xiaofan-detail">利润 ¥0.00</small></div>
+                </div>
+                <button class="primary-button wide" type="submit"><svg><use href="#i-check"/></svg>保存销售并确认分配</button>
+              </form>
+            </section>
+          </div>
+
+          <section class="section-card dst-ledger-card">
+            <div class="dst-section-head"><div><span>SALES LEDGER</span><h3>销售与利润分配明细</h3><p>卖货人拿利润 60%，另一人拿 40%，成本和发货运费各承担一半。</p></div></div>
+            <div class="dst-table-wrap"><table class="dst-table"><thead><tr><th>日期 / 备注</th><th>卖货人</th><th>数量</th><th>销售额</th><th>成本</th><th>运费</th><th>净利润</th><th>菜菜利润</th><th>小凡利润</th><th>本次回款分配</th><th></th></tr></thead><tbody id="dst-sales-list"></tbody></table></div>
+          </section>
+
+          <section class="section-card dst-ledger-card">
+            <div class="dst-section-head"><div><span>PURCHASE LEDGER</span><h3>进货明细</h3><p>当前平均成本按全部进货金额（含进货运费）加权计算。</p></div></div>
+            <div class="dst-table-wrap"><table class="dst-table"><thead><tr><th>日期 / 备注</th><th>数量</th><th>单价</th><th>进货运费</th><th>本批总成本</th><th></th></tr></thead><tbody id="dst-purchases-list"></tbody></table></div>
+          </section>
+        </section>
+
         <footer>菜菜 & 小凡的双人小账本 · 清楚分账，安心合作</footer>
       </div>
     </main>
@@ -224,9 +304,10 @@
 
   <nav class="mobile-nav">
     <button class="active" type="button" data-view="settlement"><svg><use href="#i-wallet"/></svg>单月结算</button>
+    <button type="button" data-view="dushutong"><svg><use href="#i-box"/></svg>读书瞳</button>
     <button type="button" data-view="history"><svg><use href="#i-clock"/></svg>历史收益</button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260821-1"></script>
+  <script src="app.js?v=20260825-1"></script>
 </body>
 </html>

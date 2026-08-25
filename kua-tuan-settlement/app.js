@@ -12,6 +12,8 @@ const resultSection = $('#result-section');
 const historyList = $('#history-list');
 const historyYearSelect = $('#history-year');
 const toast = $('#toast');
+const dstPurchaseForm = $('#dst-purchase-form');
+const dstSaleForm = $('#dst-sale-form');
 
 let attendanceMode = 'days';
 let selectedDates = {};
@@ -205,9 +207,14 @@ function setMode(mode) {
 function switchView(viewName) {
   $$('.view').forEach(view => view.classList.toggle('active', view.id === `view-${viewName}`));
   $$('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === viewName));
-  $('#page-greeting').innerHTML = viewName === 'history'
-    ? '看看以前每一期是怎么分配的 <span>☀</span>'
-    : '嗨，来完成本月结算吧 <span>☀</span>';
+  const greetings = {
+    history: '看看以前每一期是怎么分配的 <span>☀</span>',
+    dushutong: '读书瞳的库存和利润，也要清清楚楚 <span>☀</span>',
+    settlement: '嗨，来完成本月结算吧 <span>☀</span>',
+  };
+  $('#page-greeting').innerHTML = greetings[viewName] || greetings.settlement;
+  $('#period-jump').hidden = viewName === 'dushutong';
+  if (viewName === 'dushutong') renderDushutong();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -217,6 +224,209 @@ function showToast(title, message) {
   toast.classList.add('show');
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+const DUSHUTONG_PURCHASES_KEY = 'dushutongPurchases';
+const DUSHUTONG_SALES_KEY = 'dushutongSales';
+const DUSHUTONG_INITIAL_STOCK_KEY = 'dushutongInitialStockSeeded';
+
+function getStoredList(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredList(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function seedDushutongInitialStock() {
+  if (localStorage.getItem(DUSHUTONG_INITIAL_STOCK_KEY)) return;
+  const purchases = getStoredList(DUSHUTONG_PURCHASES_KEY);
+  const sales = getStoredList(DUSHUTONG_SALES_KEY);
+  if (!purchases.length && !sales.length) {
+    saveStoredList(DUSHUTONG_PURCHASES_KEY, [{
+      id: 'initial-stock-20260825',
+      date: '2026-08-25',
+      quantity: 50,
+      unitCost: 98,
+      freight: 57,
+      totalCost: 4957,
+      note: '现有首批库存',
+    }]);
+  }
+  localStorage.setItem(DUSHUTONG_INITIAL_STOCK_KEY, '1');
+}
+
+function dushutongTotals() {
+  const purchases = getStoredList(DUSHUTONG_PURCHASES_KEY);
+  const sales = getStoredList(DUSHUTONG_SALES_KEY);
+  const purchasedQuantity = purchases.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const purchaseCost = purchases.reduce((sum, item) => sum + Number(item.totalCost || 0), 0);
+  const soldQuantity = sales.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const soldGoodsCost = sales.reduce((sum, item) => sum + Number(item.goodsCost || 0), 0);
+  const stock = purchasedQuantity - soldQuantity;
+  const inventoryValue = Math.max(0, roundMoney(purchaseCost - soldGoodsCost));
+  const averageCost = stock > 0 ? roundMoney(inventoryValue / stock) : 0;
+  return { purchases, sales, purchasedQuantity, purchaseCost, soldQuantity, soldGoodsCost, stock, inventoryValue, averageCost };
+}
+
+function calculateDushutongSale() {
+  const totals = dushutongTotals();
+  const quantity = Math.max(0, Math.floor(numberValue($('#dst-sale-quantity'))));
+  const unitPrice = Math.max(0, numberValue($('#dst-sale-unit-price')));
+  const freight = Math.max(0, numberValue($('#dst-sale-freight')));
+  const seller = $('#dst-sale-seller').value === 'xiaofan' ? 'xiaofan' : 'caicai';
+  const revenue = roundMoney(quantity * unitPrice);
+  const goodsCost = roundMoney(quantity * totals.averageCost);
+  const grossProfit = roundMoney(revenue - goodsCost);
+  const profit = roundMoney(revenue - goodsCost - freight);
+  const sellerCostShare = roundMoney(goodsCost / 2);
+  const otherCostShare = roundMoney(goodsCost - sellerCostShare);
+  const sellerReceivable = roundMoney(sellerCostShare + grossProfit * 0.6 - freight / 2);
+  const otherReceivable = roundMoney(revenue - freight - sellerReceivable);
+  const sellerProfit = roundMoney(sellerReceivable - sellerCostShare);
+  const otherProfit = roundMoney(otherReceivable - otherCostShare);
+  const caicaiReceivable = seller === 'caicai' ? sellerReceivable : otherReceivable;
+  const xiaofanReceivable = seller === 'xiaofan' ? sellerReceivable : otherReceivable;
+  const caicaiProfit = seller === 'caicai' ? sellerProfit : otherProfit;
+  const xiaofanProfit = seller === 'xiaofan' ? sellerProfit : otherProfit;
+  return {
+    quantity, unitPrice, freight, revenue, goodsCost, unitCost: totals.averageCost, grossProfit, profit, seller,
+    caicaiProfit, xiaofanProfit, caicaiReceivable, xiaofanReceivable,
+    caicaiCostShare: seller === 'caicai' ? sellerCostShare : otherCostShare,
+    xiaofanCostShare: seller === 'xiaofan' ? sellerCostShare : otherCostShare,
+    stock: totals.stock,
+  };
+}
+
+function updateDushutongPreview() {
+  const sale = calculateDushutongSale();
+  $('#dst-preview-revenue').textContent = formatMoney(sale.revenue);
+  $('#dst-preview-cost').textContent = formatMoney(sale.goodsCost);
+  $('#dst-preview-profit').textContent = formatMoney(sale.profit);
+  $('#dst-preview-profit').classList.toggle('dst-profit-warning', sale.profit < 0);
+  $('#dst-preview-caicai').textContent = formatMoney(sale.caicaiReceivable);
+  $('#dst-preview-xiaofan').textContent = formatMoney(sale.xiaofanReceivable);
+  $('#dst-preview-caicai-detail').textContent = `${sale.seller === 'caicai' ? '卖货人 60%' : '另一人 40%'} · 成本返还 ${formatMoney(sale.caicaiCostShare)} · 分得利润 ${formatMoney(sale.caicaiProfit)}`;
+  $('#dst-preview-xiaofan-detail').textContent = `${sale.seller === 'xiaofan' ? '卖货人 60%' : '另一人 40%'} · 成本返还 ${formatMoney(sale.xiaofanCostShare)} · 分得利润 ${formatMoney(sale.xiaofanProfit)}`;
+}
+
+function formatDushutongDate(value) {
+  if (!value) return '未填写日期';
+  const [year, month, day] = value.split('-');
+  return `${year}.${month}.${day}`;
+}
+
+function safeText(value) {
+  return String(value || '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+}
+
+function ownerName(value) {
+  return value === 'xiaofan' ? '小凡' : '菜菜';
+}
+
+function renderDushutong() {
+  const totals = dushutongTotals();
+  const revenue = totals.sales.reduce((sum, item) => sum + Number(item.revenue || 0), 0);
+  const profit = totals.sales.reduce((sum, item) => sum + Number(item.profit || 0), 0);
+  const caicaiProfit = totals.sales.reduce((sum, item) => sum + Number(item.caicaiProfit || 0), 0);
+  const xiaofanProfit = totals.sales.reduce((sum, item) => sum + Number(item.xiaofanProfit || 0), 0);
+  $('#dst-hero-stock').textContent = `${totals.stock} 台`;
+  $('#dst-stock-count').textContent = `${totals.stock} 台`;
+  $('#dst-stock-flow').textContent = `累计进货 ${totals.purchasedQuantity} · 已售 ${totals.soldQuantity}`;
+  $('#dst-average-cost').textContent = formatMoney(totals.averageCost);
+  $('#dst-stock-value').textContent = `库存货值 ${formatMoney(totals.inventoryValue)}`;
+  $('#dst-revenue-total').textContent = formatMoney(revenue);
+  $('#dst-sales-count').textContent = `共 ${totals.sales.length} 笔销售`;
+  $('#dst-profit-total').textContent = formatMoney(profit);
+  $('#dst-caicai-profit').textContent = formatMoney(caicaiProfit);
+  $('#dst-xiaofan-profit').textContent = formatMoney(xiaofanProfit);
+  $('#dst-sale-quantity').max = Math.max(0, totals.stock);
+
+  const salesList = $('#dst-sales-list');
+  salesList.innerHTML = totals.sales.length ? totals.sales.map(item => `<tr>
+    <td><strong>${formatDushutongDate(item.date)}</strong><small>${safeText(item.note) || '无备注'}</small></td>
+    <td><strong>${ownerName(item.seller)}</strong><small>利润 60%</small></td><td>${item.quantity} 台</td><td>${formatMoney(item.revenue)}</td><td>${formatMoney(item.goodsCost)}<small>双方各承担一半</small></td>
+    <td>${formatMoney(item.freight)}<small>双方各 ${formatMoney(Number(item.freight || 0) / 2)}</small></td><td class="${Number(item.profit) < 0 ? 'negative' : 'positive'}">${formatMoney(item.profit)}</td>
+    <td>${formatMoney(item.caicaiProfit)}<small>${item.seller === 'caicai' ? '卖货 60%' : '合作 40%'}</small></td><td>${formatMoney(item.xiaofanProfit)}<small>${item.seller === 'xiaofan' ? '卖货 60%' : '合作 40%'}</small></td>
+    <td class="allocation-cell">菜菜 ${formatMoney(item.caicaiReceivable)}<br>小凡 ${formatMoney(item.xiaofanReceivable)}<small>均含本人一半成本返还</small></td>
+    <td><button class="dst-delete" type="button" data-dst-sale-id="${item.id}" aria-label="删除销售记录">×</button></td>
+  </tr>`).join('') : '<tr><td class="dst-empty" colspan="11">还没有销售记录，卖出第一台后会显示在这里。</td></tr>';
+
+  const purchasesList = $('#dst-purchases-list');
+  purchasesList.innerHTML = totals.purchases.length ? totals.purchases.map(item => `<tr>
+    <td><strong>${formatDushutongDate(item.date)}</strong><small>${safeText(item.note) || '无备注'}</small></td><td>${item.quantity} 台</td>
+    <td>${formatMoney(item.unitCost)}</td><td>${formatMoney(item.freight)}</td><td>${formatMoney(item.totalCost)}</td>
+    <td><button class="dst-delete" type="button" data-dst-purchase-id="${item.id}" aria-label="删除进货记录">×</button></td>
+  </tr>`).join('') : '<tr><td class="dst-empty" colspan="6">还没有进货记录，请先录入库存。</td></tr>';
+  updateDushutongPreview();
+}
+
+function addDushutongPurchase(event) {
+  event.preventDefault();
+  const quantity = Math.floor(numberValue($('#dst-purchase-quantity')));
+  const unitCost = numberValue($('#dst-purchase-unit-cost'));
+  const freight = numberValue($('#dst-purchase-freight'));
+  if (quantity <= 0 || unitCost < 0 || freight < 0) return showToast('无法保存', '请填写正确的进货数量和金额。');
+  const purchases = getStoredList(DUSHUTONG_PURCHASES_KEY);
+  purchases.unshift({
+    id: Date.now(), date: $('#dst-purchase-date').value, quantity, unitCost: roundMoney(unitCost), freight: roundMoney(freight),
+    totalCost: roundMoney(quantity * unitCost + freight), note: $('#dst-purchase-note').value.trim(),
+  });
+  saveStoredList(DUSHUTONG_PURCHASES_KEY, purchases);
+  dstPurchaseForm.reset();
+  $('#dst-purchase-date').value = localDateValue();
+  $('#dst-purchase-freight').value = 0;
+  renderDushutong();
+  showToast('进货已保存', `库存增加 ${quantity} 台。`);
+}
+
+function addDushutongSale(event) {
+  event.preventDefault();
+  const sale = calculateDushutongSale();
+  if (sale.quantity <= 0) return showToast('无法保存', '请填写正确的卖出数量。');
+  if (sale.quantity > sale.stock) return showToast('库存不足', `当前只有 ${sale.stock} 台可售。`);
+  if (sale.unitPrice <= 0) return showToast('无法保存', '请填写大于 0 元的每台售价。');
+  const sales = getStoredList(DUSHUTONG_SALES_KEY);
+  sales.unshift({ id: Date.now(), date: $('#dst-sale-date').value, note: $('#dst-sale-note').value.trim(), ...sale });
+  saveStoredList(DUSHUTONG_SALES_KEY, sales);
+  dstSaleForm.reset();
+  $('#dst-sale-date').value = localDateValue();
+  $('#dst-sale-quantity').value = 1;
+  $('#dst-sale-unit-price').value = 198;
+  $('#dst-sale-freight').value = 0;
+  $('#dst-sale-seller').value = sale.seller;
+  renderDushutong();
+  showToast('销售已保存', `菜菜本次应收 ${formatMoney(sale.caicaiReceivable)}，小凡本次应收 ${formatMoney(sale.xiaofanReceivable)}。`);
+}
+
+function deleteDushutongSale(id) {
+  if (!confirm('确定删除这笔销售记录吗？删除后库存会自动恢复。')) return;
+  const sales = getStoredList(DUSHUTONG_SALES_KEY).filter(item => String(item.id) !== String(id));
+  saveStoredList(DUSHUTONG_SALES_KEY, sales);
+  renderDushutong();
+}
+
+function deleteDushutongPurchase(id) {
+  if (!confirm('确定删除这笔进货记录吗？')) return;
+  const current = dushutongTotals();
+  const purchases = current.purchases.filter(item => String(item.id) !== String(id));
+  const remainingQuantity = purchases.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const remainingCost = purchases.reduce((sum, item) => sum + Number(item.totalCost || 0), 0);
+  if (remainingQuantity < current.soldQuantity || remainingCost + 0.01 < current.soldGoodsCost) {
+    return showToast('不能删除', '这批进货已被现有销售记录占用，请先删除相关销售记录。');
+  }
+  saveStoredList(DUSHUTONG_PURCHASES_KEY, purchases);
+  renderDushutong();
+}
+
+function localDateValue() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
 function validate(total, counts) {
@@ -375,12 +585,21 @@ $('#clear-history').addEventListener('click', () => { if (getHistory().length &&
 historyYearSelect.addEventListener('change', () => renderYearSummary(getHistory()));
 historyList.addEventListener('click', event => { const button = event.target.closest('[data-history-id]'); if (!button) return; const next = getHistory().filter(item => String(item.id) !== button.dataset.historyId); localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(next)); renderHistory(); });
 form.addEventListener('submit', calculateSettlement);
+dstPurchaseForm.addEventListener('submit', addDushutongPurchase);
+dstSaleForm.addEventListener('submit', addDushutongSale);
+['#dst-sale-quantity', '#dst-sale-unit-price', '#dst-sale-freight', '#dst-sale-seller'].forEach(selector => $(selector).addEventListener('input', updateDushutongPreview));
+$('#dst-sales-list').addEventListener('click', event => { const button = event.target.closest('[data-dst-sale-id]'); if (button) deleteDushutongSale(button.dataset.dstSaleId); });
+$('#dst-purchases-list').addEventListener('click', event => { const button = event.target.closest('[data-dst-purchase-id]'); if (button) deleteDushutongPurchase(button.dataset.dstPurchaseId); });
 
 startMonthInput.value = defaultStartMonth();
+$('#dst-purchase-date').value = localDateValue();
+$('#dst-sale-date').value = localDateValue();
 updateAllocationUI();
+seedDushutongInitialStock();
 formatToday();
 updatePeriodUI();
 updateIncomePreview();
 renderCalendars();
 updateRestModeUI();
 renderHistory();
+renderDushutong();
