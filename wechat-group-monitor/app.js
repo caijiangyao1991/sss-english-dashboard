@@ -12,15 +12,37 @@ const ui = {
 
 let state = loadState();
 let selectedFiles = [];
+let ocrRunning = false;
 
 function loadState() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (stored && Array.isArray(stored.groups) && Array.isArray(stored.events)) {
-      return { groups: stored.groups, events: stored.events, activeGroupId: stored.activeGroupId || stored.groups[0]?.id || null };
+      const next = { groups: stored.groups, events: stored.events, activeGroupId: stored.activeGroupId || stored.groups[0]?.id || null };
+      seedKnownGroups(next);
+      return next;
     }
   } catch {}
-  return { groups: [], events: [], activeGroupId: null };
+  const initial = { groups: [], events: [], activeGroupId: null };
+  seedKnownGroups(initial);
+  return initial;
+}
+
+function seedKnownGroups(target) {
+  const knownGroups = [
+    { id: 'mango-group-2', name: '芒果味的糯米团子好物分享群②', note: '微信群显示 456 人', expectedCount: 456 },
+    { id: 'mango-group-3', name: '芒果味的糯米团子好物分享群③', note: '微信群显示 313 人', expectedCount: 313 },
+  ];
+  knownGroups.forEach(known => {
+    const existing = target.groups.find(group => group.name === known.name);
+    if (existing) {
+      existing.expectedCount = known.expectedCount;
+      existing.note ||= known.note;
+    } else {
+      target.groups.push({ ...known, createdAt: new Date().toISOString(), snapshots: [] });
+    }
+  });
+  if (!target.activeGroupId) target.activeGroupId = target.groups[0]?.id || null;
 }
 
 function saveState() {
@@ -105,7 +127,11 @@ function renderGroups() {
   if (!state.groups.length) {
     ui.groupList.innerHTML = '<div class="empty-state">还没有微信群<br>点击右上角＋创建</div>';
   } else {
-    ui.groupList.innerHTML = state.groups.map(group => `<button class="group-item ${group.id === state.activeGroupId ? 'active' : ''}" type="button" data-group-id="${group.id}"><strong>${escapeHtml(group.name)}</strong><small>${latestSnapshot(group)?.members.length || 0} 位成员 · ${group.snapshots.length} 次快照</small><span class="group-delete" data-delete-group="${group.id}" aria-label="删除微信群">×</span></button>`).join('');
+    ui.groupList.innerHTML = state.groups.map(group => {
+      const snapshot = latestSnapshot(group);
+      const memberText = snapshot ? `${snapshot.members.length} 位成员` : group.expectedCount ? `群标题显示 ${group.expectedCount} 人` : '待建立基线';
+      return `<button class="group-item ${group.id === state.activeGroupId ? 'active' : ''}" type="button" data-group-id="${group.id}"><strong>${escapeHtml(group.name)}</strong><small>${memberText} · ${group.snapshots.length} 次快照</small><span class="group-delete" data-delete-group="${group.id}" aria-label="删除微信群">×</span></button>`;
+    }).join('');
   }
   const group = activeGroup();
   $('#mobile-group-select').innerHTML = state.groups.length ? state.groups.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('') : '<option value="">暂无微信群</option>';
@@ -120,7 +146,8 @@ function renderDashboard() {
   const snapshot = latestSnapshot(group);
   const leftEvents = group ? groupEvents(group.id, 'left') : [];
   const joinedEvents = group ? groupEvents(group.id, 'joined') : [];
-  $('#summary-members').textContent = snapshot?.members.length || 0;
+  $('#summary-members').textContent = snapshot?.members.length || group?.expectedCount || 0;
+  $('#summary-members-note').textContent = snapshot ? '最近一次快照' : group?.expectedCount ? '群标题显示人数，待上传名单核对' : '尚未建立基线';
   $('#summary-left').textContent = leftEvents.length;
   $('#summary-joined').textContent = joinedEvents.length;
   $('#summary-snapshots').textContent = group?.snapshots.length || 0;
@@ -231,7 +258,7 @@ function saveSnapshot() {
 }
 
 async function runOcr() {
-  if (!selectedFiles.length) return;
+  if (!selectedFiles.length || ocrRunning) return;
   if (!window.Tesseract) return showToast('识别组件未加载', '请检查网络后刷新，或改用粘贴名单。');
   const button = $('#run-ocr');
   const progress = $('#ocr-progress');
@@ -240,8 +267,13 @@ async function runOcr() {
   button.disabled = true;
   progress.hidden = false;
   let worker;
+  ocrRunning = true;
   try {
-    worker = await Tesseract.createWorker('chi_sim+eng', 1, {
+    worker = await Tesseract.createWorker('chi_sim', 1, {
+      workerPath: 'vendor/tesseract/worker.min.js',
+      corePath: 'vendor/tesseract/tesseract-core-lstm.js',
+      langPath: 'vendor/tesseract/lang',
+      gzip: true,
       logger: message => {
         const percent = Math.round((message.progress || 0) * 100);
         bar.style.width = `${percent}%`;
@@ -264,6 +296,7 @@ async function runOcr() {
     showToast('截图识别失败', '请检查网络或图片清晰度，也可以直接粘贴成员名单。');
   } finally {
     if (worker) await worker.terminate();
+    ocrRunning = false;
     button.disabled = !selectedFiles.length;
     setTimeout(() => { progress.hidden = true; bar.style.width = '0'; }, 700);
   }
@@ -315,6 +348,7 @@ ui.screenshotInput.addEventListener('change', () => {
   selectedFiles = [...ui.screenshotInput.files];
   $('#file-count').textContent = selectedFiles.length ? `已选择 ${selectedFiles.length} 张截图` : '尚未选择截图';
   $('#run-ocr').disabled = !selectedFiles.length;
+  if (selectedFiles.length) runOcr();
 });
 $('#upload-zone').addEventListener('dragover', event => { event.preventDefault(); event.currentTarget.classList.add('dragover'); });
 $('#upload-zone').addEventListener('dragleave', event => event.currentTarget.classList.remove('dragover'));
@@ -324,6 +358,7 @@ $('#upload-zone').addEventListener('drop', event => {
   selectedFiles = [...event.dataTransfer.files].filter(file => file.type.startsWith('image/'));
   $('#file-count').textContent = selectedFiles.length ? `已选择 ${selectedFiles.length} 张截图` : '尚未选择截图';
   $('#run-ocr').disabled = !selectedFiles.length;
+  if (selectedFiles.length) runOcr();
 });
 $('#run-ocr').addEventListener('click', runOcr);
 $('#save-snapshot').addEventListener('click', saveSnapshot);

@@ -60,7 +60,7 @@
           </section>
 
           <section class="summary-grid">
-            <article><span>当前成员</span><strong id="summary-members">0</strong><small>最近一次快照</small></article>
+            <article><span>当前成员</span><strong id="summary-members">0</strong><small id="summary-members-note">最近一次快照</small></article>
             <article class="danger"><span>累计退群</span><strong id="summary-left">0</strong><small>需要重点关注</small></article>
             <article class="success"><span>累计新进群</span><strong id="summary-joined">0</strong><small>快照对比结果</small></article>
             <article><span>已保存快照</span><strong id="summary-snapshots">0</strong><small id="summary-last-time">尚未建立基线</small></article>
@@ -94,9 +94,9 @@
             </div>
             <div class="import-panel" id="import-ocr">
               <label class="upload-zone" id="upload-zone"><input id="screenshot-input" type="file" accept="image/*" multiple><svg><use href="#i-upload"/></svg><strong>上传微信群成员列表截图</strong><span>支持多张截图；建议裁剪掉聊天内容，只保留头像下方的昵称区域。</span><em id="file-count">尚未选择截图</em></label>
-              <button id="run-ocr" class="ocr-button" type="button" disabled><svg><use href="#i-scan"/></svg><span>开始本地识别昵称</span></button>
+              <button id="run-ocr" class="ocr-button" type="button" disabled><svg><use href="#i-scan"/></svg><span>选择截图后自动识别，也可点此重试</span></button>
               <div id="ocr-progress" class="ocr-progress" hidden><div><span></span></div><p>正在准备识别…</p></div>
-              <p class="ocr-tip">首次识别需要联网下载中文识别模型，但截图本身不会上传。识别结果会放入名单文本框，请务必人工删除“群聊名称、完成”等界面文字。</p>
+              <p class="ocr-tip">选择截图后会自动开始识别。首次识别仍需联网下载中文模型，但截图本身不会上传；识别结果会放入名单文本框，请务必人工删除“群聊名称、完成”等界面文字。</p>
             </div>
 
             <section class="compare-preview">
@@ -137,7 +137,7 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="app.js?v=20260825-1"></script>
+  <script src="vendor/tesseract/tesseract.min.js"></script>
+  <script src="app.js?v=20260826-1"></script>
 </body>
 </html>
