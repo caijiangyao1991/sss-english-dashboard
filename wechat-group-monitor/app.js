@@ -390,3 +390,9 @@ $('#export-history').addEventListener('click', exportHistory);
 $('#snapshot-time').value = localDateTimeValue();
 formatToday();
 renderAll();
+
+cloudSync?.start({
+  appId: 'wechat-group-monitor',
+  keys: ['wechatGroupMonitorData'],
+  onRemote: () => { state = loadState(); renderAll(); },
+});

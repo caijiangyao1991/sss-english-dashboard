@@ -682,4 +682,10 @@ updateIncomePreview();
 renderCalendars();
 updateRestModeUI();
 renderHistory();
+
+cloudSync?.start({
+  appId: 'shared-settlement-ledger',
+  keys: ['kuaTuanMonthlyHistory', 'kuaTuanAllocation', 'dushutongPurchases', 'dushutongSales', 'dushutongInitialStockSeeded'],
+  onRemote: () => { updateAllocationUI(); renderHistory(); renderDushutong(); },
+});
 renderDushutong();
