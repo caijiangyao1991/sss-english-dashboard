@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260825-1">
+  <link rel="stylesheet" href="styles.css?v=20260828-1">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -214,8 +214,13 @@
               <article><span>快团全年出勤池</span><strong id="year-work-pool">¥0.00</strong><small>仅统计快团月结</small></article>
             </div>
             <div class="history-toolbar">
-              <div><strong>全部收益分配记录</strong><small>快团月结与读书瞳销售统一展示，仅存储在当前浏览器</small></div>
-              <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空快团记录</button>
+              <div><strong>全部收益分配记录</strong><small>快团月结与读书瞳销售统一展示，仅存储在当前浏览器；建议定期导出备份</small></div>
+              <div class="history-actions">
+                <button id="export-history" class="soft-button" type="button">导出备份</button>
+                <button id="import-history" class="soft-button" type="button">导入备份</button>
+                <input id="import-history-file" type="file" accept="application/json,.json" hidden>
+                <button id="clear-history" class="soft-button danger" type="button"><svg><use href="#i-trash"/></svg>清空快团记录</button>
+              </div>
             </div>
             <div id="history-list" class="history-list"><p class="empty-history">完成快团月结或读书瞳销售后，记录会出现在这里。</p></div>
           </section>
@@ -311,6 +316,6 @@
     <a href="../wechat-group-monitor/"><svg><use href="#i-users"/></svg>退群侦测</a>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>提示</strong><p></p></div></div>
-  <script src="app.js?v=20260825-1"></script>
+  <script src="app.js?v=20260828-1"></script>
 </body>
 </html>

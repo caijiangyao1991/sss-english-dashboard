@@ -471,7 +471,7 @@ function calculateSettlement(event) {
     caicaiWork, xiaofanWork, caicaiTotal, xiaofanTotal,
   };
   displayResult(result);
-  saveHistory(result);
+  if (!saveHistory(result)) return;
   switchView('settlement');
   showToast('结算完成', '本期结果已计算并保存在这台设备上。');
   resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -505,8 +505,59 @@ function getHistory() {
 function saveHistory(result) {
   const history = getHistory().filter(item => item.periodKey !== result.periodKey);
   history.unshift(result);
-  localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(history.slice(0, 24)));
+  try {
+    localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(history.slice(0, 24)));
+  } catch {
+    showToast('保存失败', '浏览器禁止或限制了本地存储，请关闭无痕模式后重试。');
+    return false;
+  }
   renderHistory();
+  return true;
+}
+
+function exportHistory() {
+  const history = getHistory();
+  const purchases = getStoredList(DUSHUTONG_PURCHASES_KEY);
+  const sales = getStoredList(DUSHUTONG_SALES_KEY);
+  if (!history.length && !purchases.length && !sales.length) { showToast('暂无记录', '录入结算或进销存数据后才能导出备份。'); return; }
+  const backup = { version: 2, exportedAt: new Date().toISOString(), history, purchases, sales, allocation };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `双人小账本备份-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('备份已导出', '请把 JSON 文件保存到安全位置。');
+}
+
+function importHistory(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      const imported = Array.isArray(parsed) ? parsed : parsed.history;
+      if (!Array.isArray(imported) || imported.some(item => !item || !item.periodKey || !item.first || !item.second)) throw new Error('invalid backup');
+      const merged = [...imported, ...getHistory()].reduce((items, item) => {
+        if (!items.some(existing => existing.periodKey === item.periodKey)) items.push(item);
+        return items;
+      }, []).sort((left, right) => Number(right.id || 0) - Number(left.id || 0)).slice(0, 24);
+      localStorage.setItem('kuaTuanMonthlyHistory', JSON.stringify(merged));
+      if (Array.isArray(parsed.purchases)) saveStoredList(DUSHUTONG_PURCHASES_KEY, parsed.purchases);
+      if (Array.isArray(parsed.sales)) saveStoredList(DUSHUTONG_SALES_KEY, parsed.sales);
+      if (parsed.allocation && Number(parsed.allocation.equal) + Number(parsed.allocation.work) === 100) {
+        allocation = parsed.allocation;
+        localStorage.setItem('kuaTuanAllocation', JSON.stringify(allocation));
+        updateAllocationUI();
+      }
+      renderHistory();
+      renderDushutong();
+      showToast('备份已导入', '快团结算与读书瞳进销存记录已恢复。');
+    } catch {
+      showToast('导入失败', '请选择本网站导出的 JSON 备份文件。');
+    }
+  };
+  reader.readAsText(file);
 }
 
 function renderYearSummary(history) {
@@ -598,6 +649,9 @@ $('#clear-dates').addEventListener('click', () => { selectedDates = {}; restDate
 $('#reset-button').addEventListener('click', resetForm);
 $('#print-button').addEventListener('click', () => window.print());
 $('#clear-history').addEventListener('click', () => { if (getHistory().length && confirm('确定清空全部快团月结记录吗？读书瞳记录不会被删除。')) { localStorage.removeItem('kuaTuanMonthlyHistory'); renderHistory(); } });
+$('#export-history').addEventListener('click', exportHistory);
+$('#import-history').addEventListener('click', () => $('#import-history-file').click());
+$('#import-history-file').addEventListener('change', event => { if (event.target.files[0]) importHistory(event.target.files[0]); event.target.value = ''; });
 historyYearSelect.addEventListener('change', () => renderYearSummary(getHistory()));
 historyList.addEventListener('click', event => {
   const monthlyButton = event.target.closest('[data-history-id]');
