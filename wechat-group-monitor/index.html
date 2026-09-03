@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260825-1">
+  <link rel="stylesheet" href="styles.css?v=20260903-1">
 </head>
 <body>
   <svg class="icon-sprite" aria-hidden="true">
@@ -94,6 +94,7 @@
             </div>
             <div class="import-panel" id="import-ocr">
               <label class="upload-zone" id="upload-zone"><input id="screenshot-input" type="file" accept="image/*" multiple><svg><use href="#i-upload"/></svg><strong>上传微信群成员列表截图</strong><span>支持多张截图；建议裁剪掉聊天内容，只保留头像下方的昵称区域。</span><em id="file-count">尚未选择截图</em></label>
+              <div id="image-preview" class="image-preview" hidden></div>
               <button id="run-ocr" class="ocr-button" type="button" disabled><svg><use href="#i-scan"/></svg><span>选择截图后自动识别，也可点此重试</span></button>
               <div id="ocr-progress" class="ocr-progress" hidden><div><span></span></div><p>正在准备识别…</p></div>
               <p class="ocr-tip">选择截图后会自动开始识别。首次识别仍需联网下载中文模型，但截图本身不会上传；识别结果会放入名单文本框，请务必人工删除“群聊名称、完成”等界面文字。</p>
@@ -141,6 +142,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../cloud-config.js"></script>
   <script src="../cloud-sync.js"></script>
-  <script src="app.js?v=20260828-2"></script>
+  <script src="app.js?v=20260903-1"></script>
 </body>
 </html>

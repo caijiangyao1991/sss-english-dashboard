@@ -13,6 +13,7 @@ const ui = {
 let state = loadState();
 let selectedFiles = [];
 let ocrRunning = false;
+let previewUrls = [];
 
 function loadState() {
   try {
@@ -111,6 +112,31 @@ function showToast(title, message) {
   ui.toast.classList.add('show');
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => ui.toast.classList.remove('show'), 2800);
+}
+
+function renderImagePreview() {
+  const preview = $('#image-preview');
+  previewUrls.forEach(url => URL.revokeObjectURL(url));
+  previewUrls = [];
+  if (!selectedFiles.length) {
+    preview.hidden = true;
+    preview.innerHTML = '';
+    return;
+  }
+  preview.hidden = false;
+  preview.innerHTML = selectedFiles.map((file, index) => {
+    const url = URL.createObjectURL(file);
+    previewUrls.push(url);
+    return `<figure><img src="${url}" alt="待识别截图 ${index + 1}"><figcaption>${index + 1}</figcaption></figure>`;
+  }).join('');
+}
+
+function setSelectedFiles(files) {
+  selectedFiles = [...files].filter(file => file.type.startsWith('image/'));
+  $('#file-count').textContent = selectedFiles.length ? `已选择 ${selectedFiles.length} 张截图` : '尚未选择截图';
+  $('#run-ocr').disabled = !selectedFiles.length;
+  renderImagePreview();
+  if (selectedFiles.length) runOcr();
 }
 
 function switchView(viewName) {
@@ -249,6 +275,7 @@ function saveSnapshot() {
   $('#snapshot-note').value = '';
   $('#snapshot-time').value = localDateTimeValue();
   selectedFiles = [];
+  renderImagePreview();
   ui.screenshotInput.value = '';
   $('#file-count').textContent = '尚未选择截图';
   $('#run-ocr').disabled = true;
@@ -259,7 +286,7 @@ function saveSnapshot() {
 
 async function runOcr() {
   if (!selectedFiles.length || ocrRunning) return;
-  if (!window.Tesseract) return showToast('识别组件未加载', '请检查网络后刷新，或改用粘贴名单。');
+  if (!window.Tesseract) return showToast('识别组件未加载', '请刷新页面后重试，或改用粘贴名单。');
   const button = $('#run-ocr');
   const progress = $('#ocr-progress');
   const bar = $('span', progress);
@@ -269,10 +296,11 @@ async function runOcr() {
   let worker;
   ocrRunning = true;
   try {
-    worker = await Tesseract.createWorker('chi_sim', 1, {
-      workerPath: 'vendor/tesseract/worker.min.js',
-      corePath: 'vendor/tesseract/tesseract-core-lstm.js',
-      langPath: 'vendor/tesseract/lang',
+    const assetUrl = path => new URL(path, document.baseURI).href;
+    worker = await window.Tesseract.createWorker('chi_sim', 1, {
+      workerPath: assetUrl('vendor/tesseract/worker.min.js'),
+      corePath: assetUrl('vendor/tesseract/tesseract-core-lstm.js'),
+      langPath: assetUrl('vendor/tesseract/lang'),
       gzip: true,
       logger: message => {
         const percent = Math.round((message.progress || 0) * 100);
@@ -293,7 +321,8 @@ async function runOcr() {
     showToast('截图识别完成', '请人工核对昵称，并删除微信界面中的无关文字。');
   } catch (error) {
     console.error(error);
-    showToast('截图识别失败', '请检查网络或图片清晰度，也可以直接粘贴成员名单。');
+    const detail = error?.message ? `（${error.message.slice(0, 80)}）` : '';
+    showToast('截图识别失败', `请刷新后重试${detail}，也可以直接粘贴成员名单。`);
   } finally {
     if (worker) await worker.terminate();
     ocrRunning = false;
@@ -345,20 +374,14 @@ ui.groupList.addEventListener('click', event => {
 ui.memberInput.addEventListener('input', renderSnapshotPreview);
 $('#clean-list').addEventListener('click', () => { ui.memberInput.value = parseNames(ui.memberInput.value).join('\n'); renderSnapshotPreview(); });
 ui.screenshotInput.addEventListener('change', () => {
-  selectedFiles = [...ui.screenshotInput.files];
-  $('#file-count').textContent = selectedFiles.length ? `已选择 ${selectedFiles.length} 张截图` : '尚未选择截图';
-  $('#run-ocr').disabled = !selectedFiles.length;
-  if (selectedFiles.length) runOcr();
+  setSelectedFiles(ui.screenshotInput.files);
 });
 $('#upload-zone').addEventListener('dragover', event => { event.preventDefault(); event.currentTarget.classList.add('dragover'); });
 $('#upload-zone').addEventListener('dragleave', event => event.currentTarget.classList.remove('dragover'));
 $('#upload-zone').addEventListener('drop', event => {
   event.preventDefault();
   event.currentTarget.classList.remove('dragover');
-  selectedFiles = [...event.dataTransfer.files].filter(file => file.type.startsWith('image/'));
-  $('#file-count').textContent = selectedFiles.length ? `已选择 ${selectedFiles.length} 张截图` : '尚未选择截图';
-  $('#run-ocr').disabled = !selectedFiles.length;
-  if (selectedFiles.length) runOcr();
+  setSelectedFiles(event.dataTransfer.files);
 });
 $('#run-ocr').addEventListener('click', runOcr);
 $('#save-snapshot').addEventListener('click', saveSnapshot);
@@ -391,7 +414,7 @@ $('#snapshot-time').value = localDateTimeValue();
 formatToday();
 renderAll();
 
-cloudSync?.start({
+window.cloudSync?.start({
   appId: 'wechat-group-monitor',
   keys: ['wechatGroupMonitorData'],
   onRemote: () => { state = loadState(); renderAll(); },
